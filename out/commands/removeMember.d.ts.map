@@ -1,1 +1,0 @@
-{"version":3,"file":"removeMember.d.ts","sourceRoot":"","sources":["../../src/commands/removeMember.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,MAAM,MAAM,QAAQ,CAAC;AAIjC,OAAO,EAAE,kBAAkB,EAAE,MAAM,6BAA6B,CAAC;AAKjE,wBAAsB,kBAAkB,CACtC,OAAO,EAAE,MAAM,CAAC,gBAAgB,EAChC,cAAc,CAAC,EAAE,kBAAkB,GAClC,OAAO,CAAC,IAAI,CAAC,CAoDf"}
