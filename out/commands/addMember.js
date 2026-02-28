@@ -36,8 +36,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleAddMember = handleAddMember;
 const vscode = __importStar(require("vscode"));
 const logger_1 = require("../utils/logger");
+const squadRegistry_1 = require("../core/squadRegistry");
+const teamState_1 = require("../team/teamState");
+const eventBus_1 = require("../core/eventBus");
 async function handleAddMember(context, rosterProvider) {
     (0, logger_1.log)('Command: squad.addMember called');
+    const ctx = squadRegistry_1.squadRegistry.activeContext;
+    if (!ctx) {
+        vscode.window.showWarningMessage('No active squad. Create one first.');
+        return;
+    }
     const name = await vscode.window.showInputBox({
         prompt: 'Enter member name',
         placeHolder: 'e.g., Alice',
@@ -45,17 +53,48 @@ async function handleAddMember(context, rosterProvider) {
     if (!name) {
         return;
     }
-    const role = await vscode.window.showInputBox({
-        prompt: 'Enter member role',
-        placeHolder: 'e.g., Frontend Dev',
+    const roleOptions = [
+        'Coordinator', 'Backend Dev', 'Frontend Dev', 'Full-Stack Dev',
+        'Tester', 'Designer', 'Architect', 'Security Agent',
+        'Session Logger', 'Work Monitor',
+        'Coding Agent', 'DevOps Agent', 'Custom...'
+    ];
+    const rolePick = await vscode.window.showQuickPick(roleOptions, {
+        placeHolder: 'Select member role',
     });
-    if (!role) {
+    if (!rolePick) {
         return;
     }
-    vscode.window.showInformationMessage(`Squad: Will add ${name} as ${role}`);
-    // TODO: Implement actual add member logic
-    if (rosterProvider) {
-        rosterProvider.refresh();
+    let role = rolePick;
+    if (rolePick === 'Custom...') {
+        const custom = await vscode.window.showInputBox({ prompt: 'Enter custom role' });
+        if (!custom) {
+            return;
+        }
+        role = custom;
     }
+    const member = {
+        name,
+        role,
+        section: role.toLowerCase().includes('coordinator') ? 'coordinator'
+            : (name.toLowerCase().includes('@copilot') || role.toLowerCase().includes('coding agent')) ? 'codingAgent'
+                : 'members',
+    };
+    const state = { ...ctx.teamState };
+    switch (member.section) {
+        case 'coordinator':
+            state.coordinator = member;
+            break;
+        case 'codingAgent':
+            state.codingAgent = member;
+            break;
+        default:
+            state.members = [...state.members, member];
+            break;
+    }
+    await (0, teamState_1.updateTeamState)(state);
+    (0, teamState_1.scaffoldAgentDir)(ctx.squadDir, name, role);
+    eventBus_1.eventBus.emit('team-changed', { squadPath: ctx.squadDir, state });
+    vscode.window.showInformationMessage(`Squad: Added ${name} as ${role}`);
 }
 //# sourceMappingURL=addMember.js.map

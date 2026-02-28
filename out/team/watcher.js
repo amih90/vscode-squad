@@ -42,13 +42,13 @@ const logger_1 = require("../utils/logger");
 const teamState_1 = require("./teamState");
 let isInternalChange = false;
 /**
- * Setup file watcher for .squad/team.md
- * @param workspaceRoot - Root directory of the workspace
+ * Setup file watcher for team.md in a squad directory
+ * @param squadDir - Root directory of the squad (containing team.md)
  * @param treeProvider - Tree provider to refresh on changes
  * @returns Disposable watcher
  */
-function setupWatcher(workspaceRoot, treeProvider) {
-    const teamFilePath = path.join(workspaceRoot, '.squad', 'team.md');
+function setupWatcher(squadDir, treeProvider) {
+    const teamFilePath = path.join(squadDir, 'team.md');
     if (!fs.existsSync(teamFilePath)) {
         (0, logger_1.log)('Team file does not exist, skipping watcher setup');
         return new vscode.Disposable(() => { });
@@ -57,7 +57,7 @@ function setupWatcher(workspaceRoot, treeProvider) {
     const watcher = fs.watch(teamFilePath, async (eventType) => {
         if (eventType === 'change' && !isInternalChange) {
             (0, logger_1.log)('Team file changed externally');
-            await (0, teamState_1.loadTeamState)(workspaceRoot);
+            await (0, teamState_1.loadTeamState)(squadDir);
             treeProvider?.refresh();
             vscode.window.showInformationMessage('Team roster updated from disk');
         }

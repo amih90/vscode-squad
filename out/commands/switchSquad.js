@@ -44,9 +44,9 @@ async function handleSwitchSquad(squadPath) {
     }
     if (!squadPath) {
         const items = all.map((ctx) => ({
-            label: ctx.rootPath,
-            description: ctx.rootPath,
-            rootPath: ctx.rootPath,
+            label: ctx.squadName,
+            description: ctx.squadDir,
+            squadDir: ctx.squadDir,
         }));
         const selected = await vscode.window.showQuickPick(items, {
             placeHolder: 'Select a squad to activate',
@@ -54,9 +54,10 @@ async function handleSwitchSquad(squadPath) {
         if (!selected) {
             return;
         }
-        squadPath = selected.rootPath;
+        squadPath = selected.squadDir;
     }
     squadRegistry_1.squadRegistry.setActiveSquad(squadPath);
-    vscode.window.showInformationMessage(`Squad: Switched to ${squadPath}`);
+    const ctx = squadRegistry_1.squadRegistry.getContext(squadPath);
+    vscode.window.showInformationMessage(`Squad: Switched to "${ctx?.squadName ?? squadPath}"`);
 }
 //# sourceMappingURL=switchSquad.js.map

@@ -4,10 +4,12 @@ exports.serializeTeamFile = serializeTeamFile;
 const logger_1 = require("../utils/logger");
 /**
  * Serialize a single member row for the markdown table.
+ * Charter column now emits the `.squad/agents/{slug}/charter.md` path.
  */
 function memberRow(m) {
-    const charter = m.charter ?? '—';
-    const status = m.status ?? '';
+    const slug = m.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const charter = m.charter || `.squad/agents/${slug}/charter.md`;
+    const status = m.status ?? '✅ Active';
     const notes = m.notes ?? '';
     return `| ${m.name} | ${m.role} | ${charter} | ${status} | ${notes} |`;
 }

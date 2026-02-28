@@ -9,7 +9,7 @@ export async function handleViewDecisions(): Promise<void> {
     return;
   }
 
-  const decisionsPath = path.join(ctx.rootPath, '.squad', 'decisions.md');
+  const decisionsPath = path.join(ctx.squadDir, 'decisions.md');
   const uri = vscode.Uri.file(decisionsPath);
 
   try {

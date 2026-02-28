@@ -35,9 +35,11 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleEditCharter = handleEditCharter;
 const vscode = __importStar(require("vscode"));
+const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const squadRegistry_1 = require("../core/squadRegistry");
-async function handleEditCharter() {
+const squadTemplates_1 = require("../templates/squadTemplates");
+async function handleEditCharter(agentNameArg) {
     const ctx = squadRegistry_1.squadRegistry.activeContext;
     if (!ctx) {
         vscode.window.showWarningMessage('No active squad');
@@ -48,20 +50,28 @@ async function handleEditCharter() {
         vscode.window.showWarningMessage('No agents in the active squad');
         return;
     }
-    const agentName = await vscode.window.showQuickPick(names, {
-        placeHolder: 'Select an agent to edit charter',
-    });
+    let agentName = agentNameArg;
+    if (!agentName) {
+        agentName = await vscode.window.showQuickPick(names, {
+            placeHolder: 'Select an agent to edit charter',
+        });
+    }
     if (!agentName) {
         return;
     }
-    const charterPath = path.join(ctx.rootPath, '.squad', 'agents', agentName.toLowerCase(), 'charter.md');
-    const uri = vscode.Uri.file(charterPath);
-    try {
-        const doc = await vscode.workspace.openTextDocument(uri);
-        await vscode.window.showTextDocument(doc);
+    const agent = ctx.agents.get(agentName);
+    const slug = agentName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const agentDir = path.join(ctx.squadDir, 'agents', slug);
+    const charterPath = path.join(agentDir, 'charter.md');
+    // Scaffold with rich charter if missing
+    if (!fs.existsSync(charterPath)) {
+        fs.mkdirSync(agentDir, { recursive: true });
+        const role = agent?.role ?? 'Team Member';
+        const projectName = path.basename(ctx.rootPath);
+        const charter = (0, squadTemplates_1.generateCharter)(agentName, role, projectName);
+        fs.writeFileSync(charterPath, charter, 'utf-8');
     }
-    catch {
-        vscode.window.showWarningMessage(`Squad: charter.md not found for ${agentName}`);
-    }
+    const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(charterPath));
+    await vscode.window.showTextDocument(doc, { preview: false });
 }
 //# sourceMappingURL=editCharter.js.map

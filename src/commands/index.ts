@@ -45,6 +45,17 @@ import { handleSearchSquads } from './searchSquads';
 // Stats commands
 import { handleShowStats } from './showStats';
 
+// New killer feature commands
+import { handleSetAgentStatus } from './setAgentStatus';
+import { handleAgentActions } from './agentActions';
+import { handleWhoOwns } from './whoOwns';
+import { handleAddDecision } from './addDecision';
+import { handleBrowseTemplates } from './browseTemplates';
+
+// Squad protocol commands
+import { handleOpenRouting } from './openRouting';
+import { handleOpenCeremonies } from './openCeremonies';
+
 export function registerCommands(
   context: vscode.ExtensionContext,
   rosterProvider?: TeamRosterProvider
@@ -143,8 +154,8 @@ export function registerCommands(
     vscode.commands.registerCommand('squad.runCeremony', () =>
       handleRunCeremony()
     ),
-    vscode.commands.registerCommand('squad.editCharter', () =>
-      handleEditCharter()
+    vscode.commands.registerCommand('squad.editCharter', (agentName?: string) =>
+      handleEditCharter(agentName)
     ),
   );
 
@@ -162,6 +173,46 @@ export function registerCommands(
     ),
   );
 
-  log('All 25 commands registered');
+  // --- Killer feature commands ---
+  disposables.push(
+    vscode.commands.registerCommand('squad.setAgentStatus', () =>
+      handleSetAgentStatus()
+    ),
+    vscode.commands.registerCommand('squad.agentActions', (agentName?: string) =>
+      handleAgentActions(agentName)
+    ),
+    vscode.commands.registerCommand('squad.whoOwns', () =>
+      handleWhoOwns()
+    ),
+    vscode.commands.registerCommand('squad.addDecision', () =>
+      handleAddDecision()
+    ),
+    vscode.commands.registerCommand('squad.browseTemplates', () =>
+      handleBrowseTemplates()
+    ),
+  );
+
+  // --- Squad protocol commands ---
+  disposables.push(
+    vscode.commands.registerCommand('squad.openRouting', () =>
+      handleOpenRouting()
+    ),
+    vscode.commands.registerCommand('squad.openCeremonies', () =>
+      handleOpenCeremonies()
+    ),
+  );
+
+  // --- Getting Started ---
+  disposables.push(
+    vscode.commands.registerCommand('squad.openGettingStarted', () =>
+      vscode.commands.executeCommand(
+        'workbench.action.openWalkthrough',
+        'squad.squad#squad.gettingStarted',
+        false,
+      )
+    ),
+  );
+
+  log('All 33 commands registered');
   return disposables;
 }

@@ -19,6 +19,14 @@
   let queueList = null;
   let loadingEl = null;
   let dashboardEl = null;
+  let squadNameEl = null;
+  let squadStatusEl = null;
+  let agentCountEl = null;
+  let logCountEl = null;
+  let queueCountEl = null;
+  let cmdInput = null;
+  let cmdAgentSelector = null;
+  let cmdSendBtn = null;
 
   // --- Initialization ---
 
@@ -29,8 +37,18 @@
     queueList = document.getElementById('queue-list');
     loadingEl = document.getElementById('loading');
     dashboardEl = document.getElementById('dashboard');
+    squadNameEl = document.getElementById('squad-name');
+    squadStatusEl = document.getElementById('squad-status');
+    agentCountEl = document.getElementById('agent-count');
+    logCountEl = document.getElementById('log-count');
+    queueCountEl = document.getElementById('queue-count');
+    cmdInput = document.getElementById('cmd-input');
+    cmdAgentSelector = document.getElementById('cmd-agent-selector');
+    cmdSendBtn = document.getElementById('cmd-send');
 
     setupFilterListeners();
+    setupActionButtons();
+    setupCommandBar();
     vscode.postMessage({ type: 'ready' });
   }
 
@@ -65,6 +83,14 @@
     state.logs = data.logs || state.logs;
     state.commandQueue = data.commandQueue || state.commandQueue;
     state.statistics = data.statistics || state.statistics;
+
+    if (data.squadName && squadNameEl) {
+      squadNameEl.textContent = data.squadName;
+    }
+    if (data.squadPath) {
+      var pathEl = document.getElementById('squad-path');
+      if (pathEl) { pathEl.textContent = data.squadPath; }
+    }
 
     if (loadingEl) {
       loadingEl.hidden = true;
@@ -147,6 +173,13 @@
     if (!agentList) { return; }
     clearChildren(agentList);
 
+    if (agentCountEl) {
+      agentCountEl.textContent = String(agents.length);
+    }
+
+    // Populate agent filter dropdown and command bar selector
+    populateAgentDropdowns(agents);
+
     if (agents.length === 0) {
       var empty = createElement('div', 'empty-state');
       empty.textContent = 'No agents detected';
@@ -160,6 +193,9 @@
         card.classList.add('agent-card--selected');
       }
 
+      // Header row: emoji + info + status badge
+      var header = createElement('div', 'agent-card__header');
+
       var emoji = createElement('span', 'agent-card__emoji');
       emoji.textContent = agent.emoji || '\uD83D\uDC64';
 
@@ -171,14 +207,26 @@
       info.appendChild(name);
       info.appendChild(role);
 
-      var statusDot = createElement('span', 'agent-card__status');
-      if (agent.status) {
-        statusDot.classList.add('agent-card__status--' + agent.status);
-      }
+      var statusBadge = createElement('span', 'agent-card__status-badge');
+      var statusText = (agent.status || 'idle').toLowerCase();
+      statusBadge.textContent = statusText;
+      statusBadge.classList.add('agent-card__status-badge--' + statusText);
 
-      card.appendChild(emoji);
-      card.appendChild(info);
-      card.appendChild(statusDot);
+      header.appendChild(emoji);
+      header.appendChild(info);
+      header.appendChild(statusBadge);
+      card.appendChild(header);
+
+      // Output preview (click-to-expand)
+      if (agent.lastOutput || agent.currentTask) {
+        var output = createElement('div', 'agent-card__output');
+        output.textContent = agent.lastOutput || agent.currentTask || '';
+        output.addEventListener('click', function (e) {
+          e.stopPropagation();
+          output.classList.toggle('expanded');
+        });
+        card.appendChild(output);
+      }
 
       card.addEventListener('click', function () {
         selectAgent(agent.name);
@@ -193,6 +241,10 @@
     clearChildren(logEntries);
 
     var filtered = getFilteredLogs(logs);
+
+    if (logCountEl) {
+      logCountEl.textContent = filtered.length + ' lines';
+    }
 
     if (filtered.length === 0) {
       var empty = createElement('div', 'empty-state');
@@ -225,6 +277,9 @@
     var level = (entry.level || 'info').toLowerCase();
     var row = createElement('div', 'log-entry log-entry--' + level);
 
+    var emojiEl = createElement('span', 'log-entry__emoji');
+    emojiEl.textContent = entry.emoji || levelEmoji(level);
+
     var time = createElement('span', 'log-entry__time');
     time.textContent = formatTime(entry.timestamp);
 
@@ -234,6 +289,7 @@
     var msg = createElement('span', 'log-entry__message');
     msg.textContent = entry.message || '';
 
+    row.appendChild(emojiEl);
     row.appendChild(time);
     row.appendChild(agent);
     row.appendChild(msg);
@@ -243,6 +299,10 @@
   function renderCommandQueue(queue) {
     if (!queueList) { return; }
     clearChildren(queueList);
+
+    if (queueCountEl) {
+      queueCountEl.textContent = String(queue.length);
+    }
 
     if (queue.length === 0) {
       var empty = createElement('div', 'empty-state');
@@ -260,7 +320,7 @@
       var badge = createElement('span', 'queue-item__badge');
       var statusText = (item.status || 'pending').toLowerCase();
       badge.textContent = statusText;
-      if (statusText === 'running' || statusText === 'done' || statusText === 'failed') {
+      if (statusText === 'running' || statusText === 'done' || statusText === 'completed' || statusText === 'failed') {
         badge.classList.add('queue-item__badge--' + statusText);
       }
       header.appendChild(cmd);
@@ -269,8 +329,20 @@
       var agentLine = createElement('div', 'queue-item__agent');
       agentLine.textContent = item.agent || '';
 
+      var timeLine = createElement('div', 'queue-item__time');
+      timeLine.textContent = formatTime(item.timestamp || item.createdAt);
+
       el.appendChild(header);
       el.appendChild(agentLine);
+      el.appendChild(timeLine);
+
+      // Result preview if completed
+      if (item.result) {
+        var result = createElement('div', 'queue-item__result');
+        result.textContent = item.result;
+        el.appendChild(result);
+      }
+
       queueList.appendChild(el);
     });
   }
@@ -294,6 +366,18 @@
         renderLogViewer(state.logs);
       });
     }
+  }
+
+  function setupActionButtons() {
+    var buttons = document.querySelectorAll('.action-btn[data-command]');
+    buttons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var cmd = btn.getAttribute('data-command');
+        if (cmd) {
+          vscode.postMessage({ type: 'run-command', command: cmd });
+        }
+      });
+    });
   }
 
   function filterLogs(agent, level) {
@@ -324,6 +408,89 @@
     renderLogViewer(state.logs);
 
     vscode.postMessage({ type: 'agent-selected', name: state.selectedAgent });
+  }
+
+  // --- Command bar ---
+
+  function setupCommandBar() {
+    if (!cmdInput || !cmdSendBtn || !cmdAgentSelector) { return; }
+
+    function updateSendState() {
+      var hasAgent = !!cmdAgentSelector.value;
+      var hasText = cmdInput.value.trim().length > 0;
+      cmdSendBtn.disabled = !(hasAgent && hasText);
+    }
+
+    cmdInput.addEventListener('input', function () {
+      updateSendState();
+      // Auto-resize textarea
+      cmdInput.style.height = 'auto';
+      cmdInput.style.height = Math.min(cmdInput.scrollHeight, 80) + 'px';
+    });
+
+    cmdAgentSelector.addEventListener('change', updateSendState);
+
+    function sendCommand() {
+      var agent = cmdAgentSelector.value;
+      var command = cmdInput.value.trim();
+      if (!agent || !command) { return; }
+
+      vscode.postMessage({
+        type: 'enqueue-command',
+        agent: agent,
+        command: command
+      });
+
+      cmdInput.value = '';
+      cmdInput.style.height = 'auto';
+      updateSendState();
+    }
+
+    cmdSendBtn.addEventListener('click', sendCommand);
+    cmdInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendCommand();
+      }
+    });
+  }
+
+  function populateAgentDropdowns(agents) {
+    // Populate filter dropdown
+    var agentFilter = document.getElementById('filter-agent');
+    if (agentFilter) {
+      var prevFilter = agentFilter.value;
+      while (agentFilter.options.length > 1) { agentFilter.remove(1); }
+      agents.forEach(function (a) {
+        var opt = document.createElement('option');
+        opt.value = a.name;
+        opt.textContent = (a.emoji || '') + ' ' + a.name;
+        agentFilter.appendChild(opt);
+      });
+      agentFilter.value = prevFilter;
+    }
+
+    // Populate command bar selector
+    if (cmdAgentSelector) {
+      var prevCmd = cmdAgentSelector.value;
+      while (cmdAgentSelector.options.length > 1) { cmdAgentSelector.remove(1); }
+      agents.forEach(function (a) {
+        var opt = document.createElement('option');
+        opt.value = a.name;
+        opt.textContent = (a.emoji || '') + ' ' + a.name;
+        cmdAgentSelector.appendChild(opt);
+      });
+      cmdAgentSelector.value = prevCmd;
+    }
+  }
+
+  function levelEmoji(level) {
+    switch (level) {
+      case 'error': return '\u274C';
+      case 'warn': return '\u26A0\uFE0F';
+      case 'debug': return '\uD83D\uDD0D';
+      default: return '\u2139\uFE0F';
+    }
   }
 
   // --- Utilities ---

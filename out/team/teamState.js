@@ -36,13 +36,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.loadTeamState = loadTeamState;
 exports.getTeamState = getTeamState;
 exports.updateTeamState = updateTeamState;
+exports.scaffoldAgentDir = scaffoldAgentDir;
 const path = __importStar(require("path"));
 const fs = __importStar(require("fs"));
 const logger_1 = require("../utils/logger");
 const parser_1 = require("./parser");
+const serializer_1 = require("./serializer");
 let currentTeamState = null;
-async function loadTeamState(workspaceRoot) {
-    const teamFilePath = path.join(workspaceRoot, '.squad', 'team.md');
+async function loadTeamState(squadDir) {
+    const teamFilePath = path.join(squadDir, 'team.md');
     if (!fs.existsSync(teamFilePath)) {
         (0, logger_1.log)('Team file not found at', teamFilePath);
         return null;
@@ -62,8 +64,32 @@ function getTeamState() {
     return currentTeamState;
 }
 async function updateTeamState(newState) {
+    const oldContent = fs.existsSync(newState.filePath)
+        ? fs.readFileSync(newState.filePath, 'utf-8')
+        : undefined;
+    const markdown = (0, serializer_1.serializeTeamFile)(newState, oldContent);
+    const dir = path.dirname(newState.filePath);
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(newState.filePath, markdown, 'utf-8');
     currentTeamState = newState;
-    // TODO: Serialize and write to disk
-    (0, logger_1.log)('Team state updated');
+    (0, logger_1.log)('Team state updated and written to disk');
+}
+function scaffoldAgentDir(squadDir, agentName, role) {
+    const slug = agentName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const agentDir = path.join(squadDir, 'agents', slug);
+    if (fs.existsSync(agentDir)) {
+        return;
+    }
+    fs.mkdirSync(agentDir, { recursive: true });
+    // Use rich charter generation from templates
+    const { generateCharter, generateHistory } = require('../templates/squadTemplates');
+    const projectName = path.basename(squadDir);
+    const charter = generateCharter(agentName, role, projectName);
+    const history = generateHistory(agentName, role, projectName);
+    fs.writeFileSync(path.join(agentDir, 'charter.md'), charter, 'utf-8');
+    fs.writeFileSync(path.join(agentDir, 'history.md'), history, 'utf-8');
+    (0, logger_1.log)(`Scaffolded agent directory for ${agentName} at ${agentDir}`);
 }
 //# sourceMappingURL=teamState.js.map

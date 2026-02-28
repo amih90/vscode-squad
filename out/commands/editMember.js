@@ -36,25 +36,54 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleEditMember = handleEditMember;
 const vscode = __importStar(require("vscode"));
 const logger_1 = require("../utils/logger");
+const squadRegistry_1 = require("../core/squadRegistry");
+const teamState_1 = require("../team/teamState");
+const eventBus_1 = require("../core/eventBus");
 async function handleEditMember(context, rosterProvider) {
     (0, logger_1.log)('Command: squad.editMember called');
-    const memberName = await vscode.window.showInputBox({
-        prompt: 'Enter the name of the member to edit',
+    const ctx = squadRegistry_1.squadRegistry.activeContext;
+    if (!ctx) {
+        vscode.window.showWarningMessage('No active squad');
+        return;
+    }
+    const allNames = [...ctx.agents.keys()];
+    if (allNames.length === 0) {
+        vscode.window.showWarningMessage('No members to edit');
+        return;
+    }
+    const memberName = await vscode.window.showQuickPick(allNames, {
+        placeHolder: 'Select member to edit',
     });
     if (!memberName) {
         return;
     }
-    const newRole = await vscode.window.showInputBox({
-        prompt: 'Enter new role',
-        placeHolder: 'e.g., Frontend Dev',
+    const field = await vscode.window.showQuickPick(['Role', 'Charter', 'Status', 'Notes'], {
+        placeHolder: 'What do you want to edit?',
     });
-    if (!newRole) {
+    if (!field) {
         return;
     }
-    vscode.window.showInformationMessage(`Squad: Will update ${memberName} to ${newRole}`);
-    // TODO: Implement actual edit member logic
-    if (rosterProvider) {
-        rosterProvider.refresh();
+    const newValue = await vscode.window.showInputBox({
+        prompt: `Enter new ${field.toLowerCase()}`,
+        placeHolder: field === 'Role' ? 'e.g., Frontend Dev' : undefined,
+    });
+    if (newValue === undefined) {
+        return;
     }
+    const state = { ...ctx.teamState };
+    const findAndUpdate = (name) => {
+        const allMembers = [
+            state.coordinator, ...state.members, state.codingAgent
+        ].filter(Boolean);
+        const m = allMembers.find(m => m.name === name);
+        if (m) {
+            const key = field.toLowerCase();
+            m[key] = newValue || undefined;
+        }
+    };
+    findAndUpdate(memberName);
+    await (0, teamState_1.updateTeamState)(state);
+    eventBus_1.eventBus.emit('team-changed', { squadPath: ctx.squadDir, state });
+    vscode.window.showInformationMessage(`Squad: Updated ${memberName}'s ${field.toLowerCase()}`);
 }
 //# sourceMappingURL=editMember.js.map

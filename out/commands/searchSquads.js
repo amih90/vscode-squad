@@ -52,7 +52,7 @@ async function handleSearchSquads() {
     const lowerQuery = query.toLowerCase();
     const results = [];
     for (const ctx of all) {
-        const squadLabel = ctx.rootPath;
+        const squadLabel = ctx.squadName;
         for (const [name, agent] of ctx.agents) {
             if (name.toLowerCase().includes(lowerQuery) ||
                 agent.role.toLowerCase().includes(lowerQuery)) {

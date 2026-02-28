@@ -10,9 +10,9 @@ export async function handleSwitchSquad(squadPath?: string): Promise<void> {
 
   if (!squadPath) {
     const items = all.map((ctx) => ({
-      label: ctx.rootPath,
-      description: ctx.rootPath,
-      rootPath: ctx.rootPath,
+      label: ctx.squadName,
+      description: ctx.squadDir,
+      squadDir: ctx.squadDir,
     }));
 
     const selected = await vscode.window.showQuickPick(items, {
@@ -23,9 +23,10 @@ export async function handleSwitchSquad(squadPath?: string): Promise<void> {
       return;
     }
 
-    squadPath = selected.rootPath;
+    squadPath = selected.squadDir;
   }
 
   squadRegistry.setActiveSquad(squadPath);
-  vscode.window.showInformationMessage(`Squad: Switched to ${squadPath}`);
+  const ctx = squadRegistry.getContext(squadPath);
+  vscode.window.showInformationMessage(`Squad: Switched to "${ctx?.squadName ?? squadPath}"`);
 }

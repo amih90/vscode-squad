@@ -89,8 +89,8 @@ class DashboardPanel {
         }
         const agents = [...ctx.agents.values()];
         const state = {
-            squadName: ctx.teamState.projectContext?.description ?? 'Squad',
-            squadPath: ctx.rootPath,
+            squadName: ctx.teamState.projectContext?.description ?? ctx.squadName,
+            squadPath: ctx.squadDir,
             agents,
             logs: logStore_1.logStore.getEntries(),
             commandQueue: commandQueue_1.commandQueueManager.getQueue(),
@@ -120,8 +120,8 @@ class DashboardPanel {
                 const logMsg = {
                     type: 'state-update',
                     data: {
-                        squadName: squadRegistry_1.squadRegistry.activeContext?.teamState.projectContext?.description ?? 'Squad',
-                        squadPath: squadRegistry_1.squadRegistry.activeContext?.rootPath ?? '',
+                        squadName: squadRegistry_1.squadRegistry.activeContext?.teamState.projectContext?.description ?? squadRegistry_1.squadRegistry.activeContext?.squadName ?? 'Squad',
+                        squadPath: squadRegistry_1.squadRegistry.activeContext?.squadDir ?? '',
                         agents: [...(squadRegistry_1.squadRegistry.activeContext?.agents.values() ?? [])],
                         logs: filtered,
                         commandQueue: commandQueue_1.commandQueueManager.getQueue(),
@@ -138,6 +138,15 @@ class DashboardPanel {
             case 'clear-logs':
                 logStore_1.logStore.clear();
                 this.sendStateUpdate();
+                break;
+            case 'enqueue-command': {
+                if ('agent' in message && 'command' in message) {
+                    commandQueue_1.commandQueueManager.enqueue(message.agent, message.command);
+                }
+                break;
+            }
+            case 'agent-selected':
+                // Selection tracking only — no action needed on host
                 break;
         }
     }

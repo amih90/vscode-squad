@@ -35,7 +35,6 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SquadSelectorItem = exports.SquadSelectorProvider = void 0;
 const vscode = __importStar(require("vscode"));
-const path = __importStar(require("path"));
 const squadRegistry_1 = require("../core/squadRegistry");
 class SquadSelectorProvider {
     constructor() {
@@ -54,7 +53,7 @@ class SquadSelectorProvider {
         }
         const activePath = squadRegistry_1.squadRegistry.activeSquadPath;
         return squadRegistry_1.squadRegistry.allContexts.map((ctx) => {
-            const isActive = ctx.rootPath === activePath;
+            const isActive = ctx.squadDir === activePath;
             return createSquadItem(ctx, isActive);
         });
     }
@@ -62,13 +61,13 @@ class SquadSelectorProvider {
 exports.SquadSelectorProvider = SquadSelectorProvider;
 function deriveLabel(ctx, isActive) {
     const description = ctx.teamState.projectContext?.description;
-    const name = description ?? path.basename(ctx.rootPath);
+    const name = description ?? ctx.squadName;
     return isActive ? `★ ${name}` : name;
 }
 function createSquadItem(ctx, isActive) {
     const label = deriveLabel(ctx, isActive);
     const agentCount = ctx.agents.size;
-    return new SquadSelectorItem(label, ctx.rootPath, isActive, agentCount);
+    return new SquadSelectorItem(label, ctx.squadDir, isActive, agentCount);
 }
 class SquadSelectorItem extends vscode.TreeItem {
     constructor(label, squadPath, isActive, agentCount) {

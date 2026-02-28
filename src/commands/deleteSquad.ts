@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import * as path from 'path';
 import { squadRegistry } from '../core/squadRegistry';
 
 export async function handleDeleteSquad(): Promise<void> {
@@ -11,9 +10,9 @@ export async function handleDeleteSquad(): Promise<void> {
   }
 
   const items = all.map((ctx) => ({
-    label: ctx.rootPath,
-    description: ctx.rootPath,
-    rootPath: ctx.rootPath,
+    label: ctx.squadName,
+    description: ctx.squadDir,
+    squadDir: ctx.squadDir,
   }));
 
   const selected = await vscode.window.showQuickPick(items, {
@@ -25,7 +24,7 @@ export async function handleDeleteSquad(): Promise<void> {
   }
 
   const confirm = await vscode.window.showWarningMessage(
-    `Delete .squad directory at ${selected.rootPath}? This cannot be undone.`,
+    `Delete squad "${selected.label}" at ${selected.squadDir}? This cannot be undone.`,
     { modal: true },
     'Delete',
   );
@@ -34,12 +33,11 @@ export async function handleDeleteSquad(): Promise<void> {
     return;
   }
 
-  squadRegistry.unregisterSquad(selected.rootPath);
+  squadRegistry.unregisterSquad(selected.squadDir);
 
-  const squadDir = path.join(selected.rootPath, '.squad');
-  if (fs.existsSync(squadDir)) {
-    fs.rmSync(squadDir, { recursive: true, force: true });
+  if (fs.existsSync(selected.squadDir)) {
+    fs.rmSync(selected.squadDir, { recursive: true, force: true });
   }
 
-  vscode.window.showInformationMessage('Squad: Deleted .squad directory');
+  vscode.window.showInformationMessage(`Squad: Deleted "${selected.label}"`);
 }

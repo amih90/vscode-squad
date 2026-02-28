@@ -70,6 +70,15 @@ const editCharter_1 = require("./editCharter");
 const searchSquads_1 = require("./searchSquads");
 // Stats commands
 const showStats_1 = require("./showStats");
+// New killer feature commands
+const setAgentStatus_1 = require("./setAgentStatus");
+const agentActions_1 = require("./agentActions");
+const whoOwns_1 = require("./whoOwns");
+const addDecision_1 = require("./addDecision");
+const browseTemplates_1 = require("./browseTemplates");
+// Squad protocol commands
+const openRouting_1 = require("./openRouting");
+const openCeremonies_1 = require("./openCeremonies");
 function registerCommands(context, rosterProvider) {
     const disposables = [];
     // --- Original 7 commands ---
@@ -85,12 +94,18 @@ function registerCommands(context, rosterProvider) {
     // --- Insight commands ---
     disposables.push(vscode.commands.registerCommand('squad.viewDecisions', () => (0, viewDecisions_1.handleViewDecisions)()), vscode.commands.registerCommand('squad.viewHistory', () => (0, viewHistory_1.handleViewHistory)()), vscode.commands.registerCommand('squad.showHealthScore', () => (0, showHealthScore_1.handleShowHealthScore)()));
     // --- Automation commands ---
-    disposables.push(vscode.commands.registerCommand('squad.runCeremony', () => (0, runCeremony_1.handleRunCeremony)()), vscode.commands.registerCommand('squad.editCharter', () => (0, editCharter_1.handleEditCharter)()));
+    disposables.push(vscode.commands.registerCommand('squad.runCeremony', () => (0, runCeremony_1.handleRunCeremony)()), vscode.commands.registerCommand('squad.editCharter', (agentName) => (0, editCharter_1.handleEditCharter)(agentName)));
     // --- Search commands ---
     disposables.push(vscode.commands.registerCommand('squad.searchSquads', () => (0, searchSquads_1.handleSearchSquads)()));
     // --- Stats commands ---
     disposables.push(vscode.commands.registerCommand('squad.showStats', () => (0, showStats_1.handleShowStats)()));
-    (0, logger_1.log)('All 25 commands registered');
+    // --- Killer feature commands ---
+    disposables.push(vscode.commands.registerCommand('squad.setAgentStatus', () => (0, setAgentStatus_1.handleSetAgentStatus)()), vscode.commands.registerCommand('squad.agentActions', (agentName) => (0, agentActions_1.handleAgentActions)(agentName)), vscode.commands.registerCommand('squad.whoOwns', () => (0, whoOwns_1.handleWhoOwns)()), vscode.commands.registerCommand('squad.addDecision', () => (0, addDecision_1.handleAddDecision)()), vscode.commands.registerCommand('squad.browseTemplates', () => (0, browseTemplates_1.handleBrowseTemplates)()));
+    // --- Squad protocol commands ---
+    disposables.push(vscode.commands.registerCommand('squad.openRouting', () => (0, openRouting_1.handleOpenRouting)()), vscode.commands.registerCommand('squad.openCeremonies', () => (0, openCeremonies_1.handleOpenCeremonies)()));
+    // --- Getting Started ---
+    disposables.push(vscode.commands.registerCommand('squad.openGettingStarted', () => vscode.commands.executeCommand('workbench.action.openWalkthrough', 'squad.squad#squad.gettingStarted', false)));
+    (0, logger_1.log)('All 33 commands registered');
     return disposables;
 }
 //# sourceMappingURL=index.js.map

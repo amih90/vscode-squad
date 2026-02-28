@@ -40,12 +40,12 @@ const logger_1 = require("../utils/logger");
 const squadRegistry_1 = require("../core/squadRegistry");
 async function handleOpenTeamFile(context) {
     (0, logger_1.log)('Command: squad.openTeamFile called');
-    const workspaceRoot = squadRegistry_1.squadRegistry.activeContext?.rootPath ?? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-    if (!workspaceRoot) {
-        vscode.window.showWarningMessage('No workspace folder open');
+    const squadDir = squadRegistry_1.squadRegistry.activeContext?.squadDir;
+    if (!squadDir) {
+        vscode.window.showWarningMessage('No active squad');
         return;
     }
-    const teamFilePath = path.join(workspaceRoot, '.squad', 'team.md');
+    const teamFilePath = path.join(squadDir, 'team.md');
     const teamFileUri = vscode.Uri.file(teamFilePath);
     try {
         const doc = await vscode.workspace.openTextDocument(teamFileUri);

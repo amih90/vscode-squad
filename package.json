@@ -10,6 +10,7 @@
   "categories": [
     "Other"
   ],
+  "icon": "media/icon.png",
   "activationEvents": [
     "workspaceContains:.squad/team.md",
     "workspaceContains:.ai-team/team.md",
@@ -20,31 +21,38 @@
     "commands": [
       {
         "command": "squad.initialize",
-        "title": "Squad: Initialize Team"
+        "title": "Squad: Initialize Team",
+        "icon": "$(rocket)"
       },
       {
         "command": "squad.openRoster",
-        "title": "Squad: Open Roster"
+        "title": "Squad: Open Roster",
+        "icon": "$(organization)"
       },
       {
         "command": "squad.addMember",
-        "title": "Squad: Add Member"
+        "title": "Squad: Add Member",
+        "icon": "$(person-add)"
       },
       {
         "command": "squad.removeMember",
-        "title": "Squad: Remove Member"
+        "title": "Squad: Remove Member",
+        "icon": "$(close)"
       },
       {
         "command": "squad.editMember",
-        "title": "Squad: Edit Member"
+        "title": "Squad: Edit Member",
+        "icon": "$(edit)"
       },
       {
         "command": "squad.refreshRoster",
-        "title": "Squad: Refresh Roster"
+        "title": "Squad: Refresh Roster",
+        "icon": "$(refresh)"
       },
       {
         "command": "squad.openTeamFile",
-        "title": "Squad: Open Team File"
+        "title": "Squad: Open Team File",
+        "icon": "$(go-to-file)"
       },
       {
         "command": "squad.openDashboard",
@@ -53,71 +61,128 @@
       },
       {
         "command": "squad.openAgentDetail",
-        "title": "Squad: Open Agent Detail"
+        "title": "Squad: Open Agent Detail",
+        "icon": "$(info)"
       },
       {
         "command": "squad.showLogs",
-        "title": "Squad: Show Agent Logs"
+        "title": "Squad: Show Agent Logs",
+        "icon": "$(output)"
       },
       {
         "command": "squad.clearLogs",
-        "title": "Squad: Clear Logs"
+        "title": "Squad: Clear Logs",
+        "icon": "$(clear-all)"
       },
       {
         "command": "squad.filterLogs",
-        "title": "Squad: Filter Logs"
+        "title": "Squad: Filter Logs",
+        "icon": "$(filter)"
       },
       {
         "command": "squad.enqueueCommand",
-        "title": "Squad: Enqueue Agent Command"
+        "title": "Squad: Enqueue Agent Command",
+        "icon": "$(run)"
       },
       {
         "command": "squad.viewQueue",
-        "title": "Squad: View Command Queue"
+        "title": "Squad: View Command Queue",
+        "icon": "$(list-ordered)"
       },
       {
         "command": "squad.clearQueue",
-        "title": "Squad: Clear Completed Queue Items"
+        "title": "Squad: Clear Completed Queue Items",
+        "icon": "$(trash)"
       },
       {
         "command": "squad.switchSquad",
-        "title": "Squad: Switch Active Squad"
+        "title": "Squad: Switch Active Squad",
+        "icon": "$(arrow-swap)"
       },
       {
         "command": "squad.createSquad",
-        "title": "Squad: Create New Squad"
+        "title": "Squad: Create New Squad",
+        "icon": "$(add)"
       },
       {
         "command": "squad.deleteSquad",
-        "title": "Squad: Delete Squad"
+        "title": "Squad: Delete Squad",
+        "icon": "$(trash)"
       },
       {
         "command": "squad.viewDecisions",
-        "title": "Squad: View Decision Timeline"
+        "title": "Squad: View Decision Timeline",
+        "icon": "$(timeline-view-icon)"
       },
       {
         "command": "squad.viewHistory",
-        "title": "Squad: View Agent History"
+        "title": "Squad: View Agent History",
+        "icon": "$(history)"
       },
       {
         "command": "squad.showHealthScore",
-        "title": "Squad: Show Health Score"
+        "title": "Squad: Show Health Score",
+        "icon": "$(pulse)"
       },
       {
         "command": "squad.runCeremony",
-        "title": "Squad: Run Ceremony"
+        "title": "Squad: Run Ceremony",
+        "icon": "$(megaphone)"
       },
       {
         "command": "squad.editCharter",
-        "title": "Squad: Edit Agent Charter"
+        "title": "Squad: Edit Agent Charter",
+        "icon": "$(notebook)"
       },
       {
         "command": "squad.searchSquads",
-        "title": "Squad: Search Across Squads"
+        "title": "Squad: Search Across Squads",
+        "icon": "$(search)"
       },
       {
         "command": "squad.showStats",
-        "title": "Squad: Show Statistics"
+        "title": "Squad: Show Statistics",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "squad.setAgentStatus",
+        "title": "Squad: Set Agent Status",
+        "icon": "$(circle-filled)"
+      },
+      {
+        "command": "squad.agentActions",
+        "title": "Squad: Agent Actions",
+        "icon": "$(symbol-event)"
+      },
+      {
+        "command": "squad.whoOwns",
+        "title": "Squad: Who Owns This File?",
+        "icon": "$(file-symlink-file)"
+      },
+      {
+        "command": "squad.addDecision",
+        "title": "Squad: Add Decision",
+        "icon": "$(milestone)"
+      },
+      {
+        "command": "squad.browseTemplates",
+        "title": "Squad: Browse Templates",
+        "icon": "$(library)"
+      },
+      {
+        "command": "squad.openRouting",
+        "title": "Squad: Open Routing Rules",
+        "icon": "$(arrow-swap)"
+      },
+      {
+        "command": "squad.openCeremonies",
+        "title": "Squad: Open Ceremonies",
+        "icon": "$(calendar)"
+      },
+      {
+        "command": "squad.openGettingStarted",
+        "title": "Squad: Getting Started",
+        "icon": "$(mortar-board)"
       }
     ],
     "viewsContainers": {
@@ -125,7 +190,7 @@
         {
           "id": "squadExplorer",
           "title": "Squad",
-          "icon": "$(people)"
+          "icon": "media/squad-activity-bar.svg"
         }
       ]
     },
@@ -148,40 +213,184 @@
     "menus": {
       "view/item/context": [
         {
-          "command": "squad.openAgentDetail",
-          "when": "view == squad.rosterView && viewItem == member",
+          "command": "squad.switchSquad",
+          "when": "view == squad.squadSelector && viewItem == squad",
           "group": "inline"
         },
         {
-          "command": "squad.viewHistory",
-          "when": "view == squad.rosterView && viewItem == member"
+          "command": "squad.deleteSquad",
+          "when": "view == squad.squadSelector && viewItem == squad",
+          "group": "squad@1"
         },
         {
-          "command": "squad.editCharter",
-          "when": "view == squad.rosterView && viewItem == member"
+          "command": "squad.openAgentDetail",
+          "when": "view == squad.rosterView && viewItem == member",
+          "group": "inline@1"
+        },
+        {
+          "command": "squad.editMember",
+          "when": "view == squad.rosterView && viewItem == member",
+          "group": "inline@2"
+        },
+        {
+          "command": "squad.enqueueCommand",
+          "when": "view == squad.rosterView && viewItem == member",
+          "group": "squad_actions@1"
         },
         {
           "command": "squad.showLogs",
-          "when": "view == squad.rosterView && viewItem == member"
+          "when": "view == squad.rosterView && viewItem == member",
+          "group": "squad_actions@2"
         },
         {
-          "command": "squad.switchSquad",
-          "when": "view == squad.squadSelector"
+          "command": "squad.viewHistory",
+          "when": "view == squad.rosterView && viewItem == member",
+          "group": "squad_info@1"
+        },
+        {
+          "command": "squad.editCharter",
+          "when": "view == squad.rosterView && viewItem == member",
+          "group": "squad_info@2"
+        },
+        {
+          "command": "squad.removeMember",
+          "when": "view == squad.rosterView && viewItem == member",
+          "group": "squad_danger@1"
+        },
+        {
+          "command": "squad.agentActions",
+          "when": "view == squad.rosterView && viewItem == member",
+          "group": "inline@3"
+        },
+        {
+          "command": "squad.setAgentStatus",
+          "when": "view == squad.rosterView && viewItem == member",
+          "group": "squad_actions@3"
         }
       ],
       "view/title": [
         {
+          "command": "squad.createSquad",
+          "when": "view == squad.squadSelector",
+          "group": "navigation@1"
+        },
+        {
+          "command": "squad.searchSquads",
+          "when": "view == squad.squadSelector",
+          "group": "navigation@2"
+        },
+        {
+          "command": "squad.initialize",
+          "when": "view == squad.squadSelector",
+          "group": "navigation@3"
+        },
+        {
+          "command": "squad.addMember",
+          "when": "view == squad.rosterView",
+          "group": "navigation@1"
+        },
+        {
           "command": "squad.openDashboard",
           "when": "view == squad.rosterView",
-          "group": "navigation"
+          "group": "navigation@2"
         },
         {
           "command": "squad.refreshRoster",
           "when": "view == squad.rosterView",
-          "group": "navigation"
+          "group": "navigation@3"
+        },
+        {
+          "command": "squad.openTeamFile",
+          "when": "view == squad.rosterView",
+          "group": "overflow@1"
+        },
+        {
+          "command": "squad.showHealthScore",
+          "when": "view == squad.rosterView",
+          "group": "overflow@2"
+        },
+        {
+          "command": "squad.runCeremony",
+          "when": "view == squad.rosterView",
+          "group": "overflow@3"
+        },
+        {
+          "command": "squad.viewDecisions",
+          "when": "view == squad.rosterView",
+          "group": "overflow@4"
+        },
+        {
+          "command": "squad.addDecision",
+          "when": "view == squad.rosterView",
+          "group": "overflow@5"
+        },
+        {
+          "command": "squad.openRouting",
+          "when": "view == squad.rosterView",
+          "group": "overflow@6"
+        },
+        {
+          "command": "squad.openCeremonies",
+          "when": "view == squad.rosterView",
+          "group": "overflow@7"
+        },
+        {
+          "command": "squad.browseTemplates",
+          "when": "view == squad.squadSelector",
+          "group": "navigation@4"
+        },
+        {
+          "command": "squad.openGettingStarted",
+          "when": "view == squad.squadSelector",
+          "group": "overflow@1"
+        },
+        {
+          "command": "squad.showStats",
+          "when": "view == squad.activityView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "squad.filterLogs",
+          "when": "view == squad.activityView",
+          "group": "navigation@2"
+        },
+        {
+          "command": "squad.clearLogs",
+          "when": "view == squad.activityView",
+          "group": "navigation@3"
+        },
+        {
+          "command": "squad.viewQueue",
+          "when": "view == squad.activityView",
+          "group": "overflow@1"
+        },
+        {
+          "command": "squad.clearQueue",
+          "when": "view == squad.activityView",
+          "group": "overflow@2"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "squad.whoOwns",
+          "group": "squad@1"
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "squad.squadSelector",
+        "contents": "No squads found.\n[Create New Squad](command:squad.createSquad)\n[Initialize Team](command:squad.initialize)\n[Getting Started](command:squad.openGettingStarted)"
+      },
+      {
+        "view": "squad.rosterView",
+        "contents": "No team members yet.\n[Add Member](command:squad.addMember)\n[Open Team File](command:squad.openTeamFile)"
+      },
+      {
+        "view": "squad.activityView",
+        "contents": "No activity recorded yet.\nActivity will appear here as agents work."
+      }
+    ],
     "configuration": {
       "title": "Squad",
       "properties": {
@@ -211,7 +420,102 @@
           "description": "Show health score in status bar"
         }
       }
-    }
+    },
+    "chatParticipants": [
+      {
+        "id": "squad.chat",
+        "fullName": "Squad",
+        "name": "squad",
+        "description": "Manage your AI agent squads — switch squads, view roster, assign tasks",
+        "isSticky": true,
+        "commands": [
+          {
+            "name": "status",
+            "description": "Show active squad status and agents"
+          },
+          {
+            "name": "switch",
+            "description": "Switch active squad by name"
+          },
+          {
+            "name": "assign",
+            "description": "Assign a task to agents or the whole squad"
+          },
+          {
+            "name": "roster",
+            "description": "Show detailed agent roster"
+          },
+          {
+            "name": "agents",
+            "description": "List agents or view details of a specific agent"
+          }
+        ]
+      }
+    ],
+    "walkthroughs": [
+      {
+        "id": "squad.gettingStarted",
+        "title": "Get Started with Squad",
+        "description": "Set up your AI agent team in under a minute",
+        "steps": [
+          {
+            "id": "createSquad",
+            "title": "Create Your Squad",
+            "description": "Choose a template to scaffold your team structure with pre-configured agents and charters.\n[Create Squad](command:squad.createSquad)",
+            "media": {
+              "markdown": "media/walkthrough/create-squad.md"
+            },
+            "completionEvents": [
+              "onCommand:squad.createSquad"
+            ]
+          },
+          {
+            "id": "viewRoster",
+            "title": "Meet Your Team",
+            "description": "Open the sidebar to see your agents, their roles, and status.\n[Open Roster](command:squad.openRoster)",
+            "media": {
+              "markdown": "media/walkthrough/view-roster.md"
+            },
+            "completionEvents": [
+              "onCommand:squad.openRoster"
+            ]
+          },
+          {
+            "id": "editCharter",
+            "title": "Define Agent Charters",
+            "description": "Each agent has a charter that defines what they do and what files they own.\n[Edit a Charter](command:squad.editCharter)",
+            "media": {
+              "markdown": "media/walkthrough/edit-charter.md"
+            },
+            "completionEvents": [
+              "onCommand:squad.editCharter"
+            ]
+          },
+          {
+            "id": "openDashboard",
+            "title": "Open the Dashboard",
+            "description": "See your squad at a glance — health score, agent status, and activity.\n[Open Dashboard](command:squad.openDashboard)",
+            "media": {
+              "markdown": "media/walkthrough/open-dashboard.md"
+            },
+            "completionEvents": [
+              "onCommand:squad.openDashboard"
+            ]
+          },
+          {
+            "id": "addMember",
+            "title": "Customize Your Squad",
+            "description": "Add, remove, or edit agents anytime. Your squad file is human-readable Markdown.\n[Add Member](command:squad.addMember)",
+            "media": {
+              "markdown": "media/walkthrough/add-member.md"
+            },
+            "completionEvents": [
+              "onCommand:squad.addMember"
+            ]
+          }
+        ]
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

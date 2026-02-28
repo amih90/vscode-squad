@@ -42,32 +42,40 @@
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.625rem;
-  border-radius: 0.625rem;
+  font-size: 0.6875rem;
+  padding: 0.1875rem 0.625rem;
+  border-radius: 0.75rem;
   background: var(--squad-badge-bg);
   color: var(--squad-badge-fg);
   text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
   flex-shrink: 0;
 }
 
-.agent-header__status-dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background: var(--squad-fg);
-}
-
-.agent-header__status--active .agent-header__status-dot {
+.agent-header__status--active {
   background: var(--squad-success);
+  color: var(--squad-bg);
 }
 
-.agent-header__status--idle .agent-header__status-dot {
+.agent-header__status--working {
   background: var(--squad-warning);
+  color: var(--squad-bg);
+  animation: pulse 2s infinite;
 }
 
-.agent-header__status--error .agent-header__status-dot {
+.agent-header__status--error {
   background: var(--squad-error);
+  color: white;
+}
+
+.agent-header__status--offline {
+  opacity: 0.5;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
 
 /* Stat cards row */
@@ -83,6 +91,11 @@
   border-radius: 0.375rem;
   padding: 0.75rem;
   text-align: center;
+  transition: border-color 0.2s;
+}
+
+.detail-stat:hover {
+  border-color: var(--squad-link);
 }
 
 .detail-stat__value {

@@ -35,22 +35,61 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleRemoveMember = handleRemoveMember;
 const vscode = __importStar(require("vscode"));
+const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
 const logger_1 = require("../utils/logger");
+const squadRegistry_1 = require("../core/squadRegistry");
+const teamState_1 = require("../team/teamState");
+const eventBus_1 = require("../core/eventBus");
 async function handleRemoveMember(context, rosterProvider) {
     (0, logger_1.log)('Command: squad.removeMember called');
-    const memberName = await vscode.window.showInputBox({
-        prompt: 'Enter the name of the member to remove',
+    const ctx = squadRegistry_1.squadRegistry.activeContext;
+    if (!ctx) {
+        vscode.window.showWarningMessage('No active squad');
+        return;
+    }
+    const allNames = [...ctx.agents.keys()];
+    if (allNames.length === 0) {
+        vscode.window.showWarningMessage('No members to remove');
+        return;
+    }
+    const memberName = await vscode.window.showQuickPick(allNames, {
+        placeHolder: 'Select member to remove',
     });
     if (!memberName) {
         return;
     }
-    const confirm = await vscode.window.showWarningMessage(`Remove ${memberName} from team? This cannot be undone.`, { modal: true }, 'Remove');
+    const confirm = await vscode.window.showWarningMessage(`Remove ${memberName} from team? Agent files will be moved to _alumni/.`, { modal: true }, 'Remove');
     if (confirm === 'Remove') {
-        vscode.window.showInformationMessage(`Squad: Will remove ${memberName}`);
-        // TODO: Implement actual remove member logic
-        if (rosterProvider) {
-            rosterProvider.refresh();
+        // Move agent directory to alumni
+        const slug = memberName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const agentDir = path.join(ctx.squadDir, 'agents', slug);
+        const alumniDir = path.join(ctx.squadDir, 'agents', '_alumni');
+        const alumniTarget = path.join(alumniDir, slug);
+        if (fs.existsSync(agentDir)) {
+            fs.mkdirSync(alumniDir, { recursive: true });
+            if (fs.existsSync(alumniTarget)) {
+                // If alumni already exists, append timestamp to avoid collision
+                const timestamped = `${slug}-${Date.now()}`;
+                fs.renameSync(agentDir, path.join(alumniDir, timestamped));
+            }
+            else {
+                fs.renameSync(agentDir, alumniTarget);
+            }
         }
+        const state = { ...ctx.teamState };
+        if (state.coordinator?.name === memberName) {
+            state.coordinator = null;
+        }
+        else if (state.codingAgent?.name === memberName) {
+            state.codingAgent = null;
+        }
+        else {
+            state.members = state.members.filter(m => m.name !== memberName);
+        }
+        await (0, teamState_1.updateTeamState)(state);
+        eventBus_1.eventBus.emit('team-changed', { squadPath: ctx.squadDir, state });
+        vscode.window.showInformationMessage(`Squad: Moved ${memberName} to alumni`);
     }
 }
 //# sourceMappingURL=removeMember.js.map

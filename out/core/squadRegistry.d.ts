@@ -4,6 +4,8 @@ import { RingBuffer } from './ringBuffer';
 import type { TeamState } from '../team/teamState';
 export interface SquadContext {
     rootPath: string;
+    squadDir: string;
+    squadName: string;
     teamState: TeamState;
     agents: Map<string, AgentRuntime>;
     logBuffer: RingBuffer<LogEntry>;
@@ -17,10 +19,10 @@ declare class SquadRegistry {
     get activeContext(): SquadContext | undefined;
     get allContexts(): SquadContext[];
     get activeSquadPath(): string | undefined;
-    registerSquad(rootPath: string): Promise<void>;
-    unregisterSquad(rootPath: string): void;
-    setActiveSquad(rootPath: string): void;
-    getContext(rootPath: string): SquadContext | undefined;
+    registerSquad(squadDir: string, workspaceRoot?: string): Promise<void>;
+    unregisterSquad(squadDir: string): void;
+    setActiveSquad(squadDir: string): void;
+    getContext(squadDir: string): SquadContext | undefined;
     scanWorkspaceFolders(): Promise<void>;
     dispose(): void;
 }

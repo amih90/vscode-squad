@@ -86,8 +86,8 @@ export class DashboardPanel {
 
     const agents = [...ctx.agents.values()];
     const state: DashboardState = {
-      squadName: ctx.teamState.projectContext?.description ?? 'Squad',
-      squadPath: ctx.rootPath,
+      squadName: ctx.teamState.projectContext?.description ?? ctx.squadName,
+      squadPath: ctx.squadDir,
       agents,
       logs: logStore.getEntries(),
       commandQueue: commandQueueManager.getQueue(),
@@ -119,8 +119,8 @@ export class DashboardPanel {
         const logMsg: HostToWebviewMessage = {
           type: 'state-update',
           data: {
-            squadName: squadRegistry.activeContext?.teamState.projectContext?.description ?? 'Squad',
-            squadPath: squadRegistry.activeContext?.rootPath ?? '',
+            squadName: squadRegistry.activeContext?.teamState.projectContext?.description ?? squadRegistry.activeContext?.squadName ?? 'Squad',
+            squadPath: squadRegistry.activeContext?.squadDir ?? '',
             agents: [...(squadRegistry.activeContext?.agents.values() ?? [])],
             logs: filtered,
             commandQueue: commandQueueManager.getQueue(),
@@ -139,6 +139,15 @@ export class DashboardPanel {
       case 'clear-logs':
         logStore.clear();
         this.sendStateUpdate();
+        break;
+      case 'enqueue-command': {
+        if ('agent' in message && 'command' in message) {
+          commandQueueManager.enqueue(message.agent, message.command);
+        }
+        break;
+      }
+      case 'agent-selected':
+        // Selection tracking only — no action needed on host
         break;
     }
   }

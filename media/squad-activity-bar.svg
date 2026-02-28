@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Center person -->
+  <circle cx="12" cy="6" r="2.5" />
+  <path d="M7.5 14.5c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" />
+  <!-- Left person -->
+  <circle cx="5" cy="8.5" r="2" />
+  <path d="M1.5 15.5c0-2 1.5-3 3.5-3s3 .8 3.5 2" />
+  <!-- Right person -->
+  <circle cx="19" cy="8.5" r="2" />
+  <path d="M22.5 15.5c0-2-1.5-3-3.5-3s-3 .8-3.5 2" />
+  <!-- Connection line -->
+  <line x1="5" y1="19" x2="19" y2="19" />
+  <circle cx="5" cy="19" r="1" fill="currentColor" stroke="none" />
+  <circle cx="12" cy="19" r="1" fill="currentColor" stroke="none" />
+  <circle cx="19" cy="19" r="1" fill="currentColor" stroke="none" />
+</svg>

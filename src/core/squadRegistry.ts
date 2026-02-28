@@ -16,6 +16,8 @@ import { parseTeamFile } from '../team/parser';
 
 export interface SquadContext {
   rootPath: string;
+  squadDir: string;
+  squadName: string;
   teamState: TeamState;
   agents: Map<string, AgentRuntime>;
   logBuffer: RingBuffer<LogEntry>;
@@ -102,8 +104,8 @@ class SquadRegistry {
     return this._activeSquadPath;
   }
 
-  async registerSquad(rootPath: string): Promise<void> {
-    const teamFilePath = path.join(rootPath, '.squad', 'team.md');
+  async registerSquad(squadDir: string, workspaceRoot?: string): Promise<void> {
+    const teamFilePath = path.join(squadDir, 'team.md');
     if (!fs.existsSync(teamFilePath)) {
       return;
     }
@@ -123,20 +125,25 @@ class SquadRegistry {
     const onTeamFileChange = () => {
       const updated = fs.readFileSync(teamFilePath, 'utf-8');
       const newState = parseTeamFile(updated, teamFilePath);
-      const ctx = this.contexts.get(rootPath);
+      const ctx = this.contexts.get(squadDir);
       if (ctx) {
         ctx.teamState = newState;
         ctx.agents = buildAgentMap(newState);
         ctx.statistics.totalAgents = ctx.agents.size;
-        eventBus.emit('team-changed', { squadPath: rootPath, state: newState });
+        eventBus.emit('team-changed', { squadPath: squadDir, state: newState });
       }
     };
 
     fileWatcher.onDidChange(onTeamFileChange);
     fileWatcher.onDidCreate(onTeamFileChange);
 
+    const rootPath = workspaceRoot ?? path.resolve(squadDir, '..', '..', '..');
+    const squadName = path.basename(squadDir);
+
     const context: SquadContext = {
       rootPath,
+      squadDir,
+      squadName,
       teamState,
       agents,
       logBuffer: new RingBuffer<LogEntry>(1000),
@@ -145,38 +152,38 @@ class SquadRegistry {
       watcher: fileWatcher,
     };
 
-    this.contexts.set(rootPath, context);
+    this.contexts.set(squadDir, context);
 
     if (!this._activeSquadPath) {
-      this._activeSquadPath = rootPath;
+      this._activeSquadPath = squadDir;
     }
 
-    eventBus.emit('squad-activated', { squadPath: rootPath });
+    eventBus.emit('squad-activated', { squadPath: squadDir });
   }
 
-  unregisterSquad(rootPath: string): void {
-    const context = this.contexts.get(rootPath);
+  unregisterSquad(squadDir: string): void {
+    const context = this.contexts.get(squadDir);
     if (context) {
       context.watcher.dispose();
-      this.contexts.delete(rootPath);
-      eventBus.emit('squad-deactivated', { squadPath: rootPath });
+      this.contexts.delete(squadDir);
+      eventBus.emit('squad-deactivated', { squadPath: squadDir });
 
-      if (this._activeSquadPath === rootPath) {
+      if (this._activeSquadPath === squadDir) {
         const remaining = this.contexts.keys().next();
         this._activeSquadPath = remaining.done ? undefined : remaining.value;
       }
     }
   }
 
-  setActiveSquad(rootPath: string): void {
-    if (this.contexts.has(rootPath)) {
-      this._activeSquadPath = rootPath;
-      eventBus.emit('squad-activated', { squadPath: rootPath });
+  setActiveSquad(squadDir: string): void {
+    if (this.contexts.has(squadDir)) {
+      this._activeSquadPath = squadDir;
+      eventBus.emit('squad-activated', { squadPath: squadDir });
     }
   }
 
-  getContext(rootPath: string): SquadContext | undefined {
-    return this.contexts.get(rootPath);
+  getContext(squadDir: string): SquadContext | undefined {
+    return this.contexts.get(squadDir);
   }
 
   async scanWorkspaceFolders(): Promise<void> {
@@ -186,8 +193,23 @@ class SquadRegistry {
     }
     for (const folder of folders) {
       const rootPath = folder.uri.fsPath;
-      if (!this.contexts.has(rootPath)) {
-        await this.registerSquad(rootPath);
+
+      // New layout: .squad/squads/<name>/team.md
+      const squadsDir = path.join(rootPath, '.squad', 'squads');
+      if (fs.existsSync(squadsDir)) {
+        for (const entry of fs.readdirSync(squadsDir)) {
+          const candidateDir = path.join(squadsDir, entry);
+          if (fs.statSync(candidateDir).isDirectory() && !this.contexts.has(candidateDir)) {
+            await this.registerSquad(candidateDir, rootPath);
+          }
+        }
+      }
+
+      // Legacy layout: .squad/team.md (single squad per folder)
+      const legacyDir = path.join(rootPath, '.squad');
+      const legacyTeam = path.join(legacyDir, 'team.md');
+      if (fs.existsSync(legacyTeam) && !fs.existsSync(squadsDir) && !this.contexts.has(legacyDir)) {
+        await this.registerSquad(legacyDir, rootPath);
       }
     }
   }

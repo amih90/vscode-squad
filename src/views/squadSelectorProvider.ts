@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 import { squadRegistry, SquadContext } from '../core/squadRegistry';
 
 export class SquadSelectorProvider implements vscode.TreeDataProvider<SquadSelectorItem> {
@@ -21,7 +20,7 @@ export class SquadSelectorProvider implements vscode.TreeDataProvider<SquadSelec
 
     const activePath = squadRegistry.activeSquadPath;
     return squadRegistry.allContexts.map((ctx) => {
-      const isActive = ctx.rootPath === activePath;
+      const isActive = ctx.squadDir === activePath;
       return createSquadItem(ctx, isActive);
     });
   }
@@ -29,14 +28,14 @@ export class SquadSelectorProvider implements vscode.TreeDataProvider<SquadSelec
 
 function deriveLabel(ctx: SquadContext, isActive: boolean): string {
   const description = ctx.teamState.projectContext?.description;
-  const name = description ?? path.basename(ctx.rootPath);
+  const name = description ?? ctx.squadName;
   return isActive ? `★ ${name}` : name;
 }
 
 function createSquadItem(ctx: SquadContext, isActive: boolean): SquadSelectorItem {
   const label = deriveLabel(ctx, isActive);
   const agentCount = ctx.agents.size;
-  return new SquadSelectorItem(label, ctx.rootPath, isActive, agentCount);
+  return new SquadSelectorItem(label, ctx.squadDir, isActive, agentCount);
 }
 
 export class SquadSelectorItem extends vscode.TreeItem {

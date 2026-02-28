@@ -1,8 +1,10 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import * as path from 'path';
 import { squadRegistry } from '../core/squadRegistry';
+import { generateCharter } from '../templates/squadTemplates';
 
-export async function handleEditCharter(): Promise<void> {
+export async function handleEditCharter(agentNameArg?: string): Promise<void> {
   const ctx = squadRegistry.activeContext;
   if (!ctx) {
     vscode.window.showWarningMessage('No active squad');
@@ -15,21 +17,31 @@ export async function handleEditCharter(): Promise<void> {
     return;
   }
 
-  const agentName = await vscode.window.showQuickPick(names, {
-    placeHolder: 'Select an agent to edit charter',
-  });
+  let agentName = agentNameArg;
+  if (!agentName) {
+    agentName = await vscode.window.showQuickPick(names, {
+      placeHolder: 'Select an agent to edit charter',
+    });
+  }
 
   if (!agentName) {
     return;
   }
 
-  const charterPath = path.join(ctx.rootPath, '.squad', 'agents', agentName.toLowerCase(), 'charter.md');
-  const uri = vscode.Uri.file(charterPath);
+  const agent = ctx.agents.get(agentName);
+  const slug = agentName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const agentDir = path.join(ctx.squadDir, 'agents', slug);
+  const charterPath = path.join(agentDir, 'charter.md');
 
-  try {
-    const doc = await vscode.workspace.openTextDocument(uri);
-    await vscode.window.showTextDocument(doc);
-  } catch {
-    vscode.window.showWarningMessage(`Squad: charter.md not found for ${agentName}`);
+  // Scaffold with rich charter if missing
+  if (!fs.existsSync(charterPath)) {
+    fs.mkdirSync(agentDir, { recursive: true });
+    const role = agent?.role ?? 'Team Member';
+    const projectName = path.basename(ctx.rootPath);
+    const charter = generateCharter(agentName, role, projectName);
+    fs.writeFileSync(charterPath, charter, 'utf-8');
   }
+
+  const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(charterPath));
+  await vscode.window.showTextDocument(doc, { preview: false });
 }

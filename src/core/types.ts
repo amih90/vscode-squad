@@ -64,7 +64,9 @@ export type WebviewToHostMessage =
   | { type: 'run-command'; command: string; args?: unknown[] }
   | { type: 'filter-logs'; agent?: string; level?: string }
   | { type: 'select-agent'; name: string }
-  | { type: 'clear-logs' };
+  | { type: 'clear-logs' }
+  | { type: 'enqueue-command'; agent: string; command: string }
+  | { type: 'agent-selected'; name: string | null };
 
 export type HostToWebviewMessage =
   | { type: 'state-update'; data: DashboardState }
@@ -92,6 +94,7 @@ export interface AgentRuntime {
   charter?: string;
   status: AgentStatus;
   currentTask?: string;
+  lastOutput?: string;
   lastActivity?: number;
   statistics: AgentStatistics;
   branchName?: string;

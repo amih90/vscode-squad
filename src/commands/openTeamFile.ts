@@ -7,12 +7,12 @@ export async function handleOpenTeamFile(
   context: vscode.ExtensionContext
 ): Promise<void> {
   log('Command: squad.openTeamFile called');
-  const workspaceRoot = squadRegistry.activeContext?.rootPath ?? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-  if (!workspaceRoot) {
-    vscode.window.showWarningMessage('No workspace folder open');
+  const squadDir = squadRegistry.activeContext?.squadDir;
+  if (!squadDir) {
+    vscode.window.showWarningMessage('No active squad');
     return;
   }
-  const teamFilePath = path.join(workspaceRoot, '.squad', 'team.md');
+  const teamFilePath = path.join(squadDir, 'team.md');
   const teamFileUri = vscode.Uri.file(teamFilePath);
 
   try {

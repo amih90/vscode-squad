@@ -90,7 +90,7 @@ class AgentDetailPanel {
         if (!ctx) {
             return '';
         }
-        const filePath = vscode.Uri.file(`${ctx.rootPath}/.squad/agents/${this.agentName}/${fileName}`);
+        const filePath = vscode.Uri.file(`${ctx.squadDir}/agents/${this.agentName}/${fileName}`);
         try {
             const bytes = await vscode.workspace.fs.readFile(filePath);
             return Buffer.from(bytes).toString('utf-8');

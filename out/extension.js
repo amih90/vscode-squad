@@ -43,6 +43,7 @@ const rosterTreeProvider_1 = require("./views/rosterTreeProvider");
 const squadSelectorProvider_1 = require("./views/squadSelectorProvider");
 const activityProvider_1 = require("./views/activityProvider");
 const index_1 = require("./commands/index");
+const squadChatParticipant_1 = require("./chat/squadChatParticipant");
 let outputChannel;
 async function activate(context) {
     outputChannel = vscode.window.createOutputChannel('Squad');
@@ -68,23 +69,27 @@ async function activate(context) {
     squadNameItem.command = 'squad.switchSquad';
     const healthItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
     healthItem.command = 'squad.openDashboard';
-    updateStatusBar(squadNameItem, healthItem);
+    const actionsItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 98);
+    actionsItem.text = '$(zap) Agent';
+    actionsItem.tooltip = 'Squad: Agent Actions';
+    actionsItem.command = 'squad.agentActions';
+    updateStatusBar(squadNameItem, healthItem, actionsItem);
     // Event listeners
     eventBus_1.eventBus.on('team-changed', () => {
         rosterProvider.refresh();
         selectorProvider.refresh();
-        updateStatusBar(squadNameItem, healthItem);
+        updateStatusBar(squadNameItem, healthItem, actionsItem);
     });
     eventBus_1.eventBus.on('squad-activated', () => {
         rosterProvider.refresh();
         selectorProvider.refresh();
-        updateStatusBar(squadNameItem, healthItem);
+        updateStatusBar(squadNameItem, healthItem, actionsItem);
     });
     eventBus_1.eventBus.on('log-entry', () => {
         activityProvider.refresh();
     });
     eventBus_1.eventBus.on('stats-updated', () => {
-        updateStatusBar(squadNameItem, healthItem);
+        updateStatusBar(squadNameItem, healthItem, actionsItem);
     });
     // Workspace folder changes
     const folderWatcher = vscode.workspace.onDidChangeWorkspaceFolders(async (e) => {
@@ -106,15 +111,21 @@ async function activate(context) {
     if (autoOpen && squadRegistry_1.squadRegistry.activeContext) {
         vscode.commands.executeCommand('squad.openDashboard');
     }
+    // First-run: open walkthrough
+    const hasSeenWalkthrough = context.globalState.get('squad.hasShownWalkthrough', false);
+    if (!hasSeenWalkthrough) {
+        context.globalState.update('squad.hasShownWalkthrough', true);
+        vscode.commands.executeCommand('workbench.action.openWalkthrough', 'squad.squad#squad.gettingStarted', false);
+    }
     // Push all disposables
-    context.subscriptions.push(outputChannel, selectorView, rosterView, activityView, squadNameItem, healthItem, folderWatcher, ...commandDisposables, {
+    context.subscriptions.push(outputChannel, selectorView, rosterView, activityView, squadNameItem, healthItem, actionsItem, folderWatcher, ...commandDisposables, (0, squadChatParticipant_1.registerChatParticipant)(context), {
         dispose: () => {
             squadRegistry_1.squadRegistry.dispose();
             eventBus_1.eventBus.dispose();
         },
     });
 }
-function updateStatusBar(nameItem, healthItem) {
+function updateStatusBar(nameItem, healthItem, actionsItem) {
     const ctx = squadRegistry_1.squadRegistry.activeContext;
     if (ctx) {
         nameItem.text = `$(people) ${ctx.teamState.projectContext?.description ?? 'Squad'}`;
@@ -124,10 +135,12 @@ function updateStatusBar(nameItem, healthItem) {
         healthItem.text = `${emoji} ${score}`;
         healthItem.tooltip = `Squad Health Score: ${score}/100`;
         healthItem.show();
+        actionsItem.show();
     }
     else {
         nameItem.hide();
         healthItem.hide();
+        actionsItem.hide();
     }
 }
 function deactivate() {

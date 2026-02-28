@@ -112,8 +112,6 @@
 
     var statusLabel = (agent.status || 'unknown').toLowerCase();
     var statusEl = createElement('div', 'agent-header__status agent-header__status--' + statusLabel);
-    var dot = createElement('span', 'agent-header__status-dot');
-    statusEl.appendChild(dot);
     var statusText = document.createTextNode(statusLabel);
     statusEl.appendChild(statusText);
 

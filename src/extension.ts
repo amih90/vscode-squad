@@ -6,6 +6,7 @@ import { TeamRosterProvider } from './views/rosterTreeProvider';
 import { SquadSelectorProvider } from './views/squadSelectorProvider';
 import { ActivityProvider } from './views/activityProvider';
 import { registerCommands } from './commands/index';
+import { registerChatParticipant } from './chat/squadChatParticipant';
 
 let outputChannel: vscode.OutputChannel;
 
@@ -43,24 +44,31 @@ export async function activate(context: vscode.ExtensionContext) {
     99,
   );
   healthItem.command = 'squad.openDashboard';
-  updateStatusBar(squadNameItem, healthItem);
+  const actionsItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Left,
+    98,
+  );
+  actionsItem.text = '$(zap) Agent';
+  actionsItem.tooltip = 'Squad: Agent Actions';
+  actionsItem.command = 'squad.agentActions';
+  updateStatusBar(squadNameItem, healthItem, actionsItem);
 
   // Event listeners
   eventBus.on('team-changed', () => {
     rosterProvider.refresh();
     selectorProvider.refresh();
-    updateStatusBar(squadNameItem, healthItem);
+    updateStatusBar(squadNameItem, healthItem, actionsItem);
   });
   eventBus.on('squad-activated', () => {
     rosterProvider.refresh();
     selectorProvider.refresh();
-    updateStatusBar(squadNameItem, healthItem);
+    updateStatusBar(squadNameItem, healthItem, actionsItem);
   });
   eventBus.on('log-entry', () => {
     activityProvider.refresh();
   });
   eventBus.on('stats-updated', () => {
-    updateStatusBar(squadNameItem, healthItem);
+    updateStatusBar(squadNameItem, healthItem, actionsItem);
   });
 
   // Workspace folder changes
@@ -88,6 +96,17 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.executeCommand('squad.openDashboard');
   }
 
+  // First-run: open walkthrough
+  const hasSeenWalkthrough = context.globalState.get<boolean>('squad.hasShownWalkthrough', false);
+  if (!hasSeenWalkthrough) {
+    context.globalState.update('squad.hasShownWalkthrough', true);
+    vscode.commands.executeCommand(
+      'workbench.action.openWalkthrough',
+      'squad.squad#squad.gettingStarted',
+      false,
+    );
+  }
+
   // Push all disposables
   context.subscriptions.push(
     outputChannel,
@@ -96,8 +115,10 @@ export async function activate(context: vscode.ExtensionContext) {
     activityView,
     squadNameItem,
     healthItem,
+    actionsItem,
     folderWatcher,
     ...commandDisposables,
+    registerChatParticipant(context),
     {
       dispose: () => {
         squadRegistry.dispose();
@@ -110,6 +131,7 @@ export async function activate(context: vscode.ExtensionContext) {
 function updateStatusBar(
   nameItem: vscode.StatusBarItem,
   healthItem: vscode.StatusBarItem,
+  actionsItem: vscode.StatusBarItem,
 ): void {
   const ctx = squadRegistry.activeContext;
   if (ctx) {
@@ -121,9 +143,11 @@ function updateStatusBar(
     healthItem.text = `${emoji} ${score}`;
     healthItem.tooltip = `Squad Health Score: ${score}/100`;
     healthItem.show();
+    actionsItem.show();
   } else {
     nameItem.hide();
     healthItem.hide();
+    actionsItem.hide();
   }
 }
 

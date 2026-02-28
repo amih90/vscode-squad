@@ -101,7 +101,7 @@ export class AgentDetailPanel {
     }
 
     const filePath = vscode.Uri.file(
-      `${ctx.rootPath}/.squad/agents/${this.agentName}/${fileName}`,
+      `${ctx.squadDir}/agents/${this.agentName}/${fileName}`,
     );
 
     try {

@@ -16,16 +16,40 @@
   </div>
 
   <div id="dashboard" class="dashboard" hidden>
+    <div class="status-header">
+      <div class="status-header__left">
+        <span class="status-header__title" id="squad-name">Squad Dashboard</span>
+        <span class="status-header__subtitle" id="squad-path"></span>
+      </div>
+      <div class="status-header__right">
+        <span id="squad-status" class="squad-status-badge">Active</span>
+      </div>
+    </div>
+
     <div id="stats-bar" class="stats-bar"></div>
+
+    <div class="action-bar">
+      <button class="action-btn" data-command="squad.addMember" title="Add Member">+ Add Member</button>
+      <button class="action-btn" data-command="squad.runCeremony" title="Run Ceremony">&#9734; Run Ceremony</button>
+      <button class="action-btn" data-command="squad.whoOwns" title="Who Owns This File?">&#128269; Who Owns?</button>
+      <button class="action-btn" data-command="squad.addDecision" title="Add Decision">&#128204; Add Decision</button>
+      <button class="action-btn" data-command="squad.setAgentStatus" title="Set Agent Status">&#9679; Set Status</button>
+    </div>
 
     <div class="panels">
       <div class="agent-panel">
-        <div class="panel-header">Agents</div>
+        <div class="panel-header">
+          <span>Agents</span>
+          <span id="agent-count" class="panel-header__count">0</span>
+        </div>
         <div id="agent-list" class="agent-list"></div>
       </div>
 
       <div class="log-panel">
-        <div class="panel-header">Logs</div>
+        <div class="panel-header">
+          <span>&#9654; Terminal</span>
+          <span id="log-count" class="panel-header__count">0 lines</span>
+        </div>
         <div class="log-toolbar">
           <select id="filter-agent" class="log-filter" aria-label="Filter by agent">
             <option value="">All agents</option>
@@ -42,9 +66,20 @@
       </div>
 
       <div class="queue-panel">
-        <div class="panel-header">Command Queue</div>
+        <div class="panel-header">
+          <span>Command Queue</span>
+          <span id="queue-count" class="panel-header__count">0</span>
+        </div>
         <div id="queue-list" class="queue-list"></div>
       </div>
+    </div>
+
+    <div class="command-bar">
+      <select id="cmd-agent-selector" class="command-bar__selector" aria-label="Select agent">
+        <option value="">Select agent...</option>
+      </select>
+      <textarea id="cmd-input" class="command-bar__input" placeholder="Send a command to the selected agent..." rows="1"></textarea>
+      <button id="cmd-send" class="command-bar__send" disabled>Send</button>
     </div>
   </div>
 

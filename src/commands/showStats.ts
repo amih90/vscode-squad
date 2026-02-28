@@ -15,7 +15,7 @@ export async function handleShowStats(): Promise<void> {
   const channel = vscode.window.createOutputChannel('Squad Statistics');
   channel.clear();
 
-  channel.appendLine(`=== Squad Statistics: ${ctx.rootPath} ===`);
+  channel.appendLine(`=== Squad Statistics: ${ctx.squadName} ===`);
   channel.appendLine('');
   channel.appendLine(`Total Agents:     ${stats.totalAgents}`);
   channel.appendLine(`Active Agents:    ${stats.activeAgents}`);

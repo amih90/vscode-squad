@@ -21,7 +21,7 @@ export async function handleSearchSquads(): Promise<void> {
   const results: string[] = [];
 
   for (const ctx of all) {
-    const squadLabel = ctx.rootPath;
+    const squadLabel = ctx.squadName;
     for (const [name, agent] of ctx.agents) {
       if (
         name.toLowerCase().includes(lowerQuery) ||

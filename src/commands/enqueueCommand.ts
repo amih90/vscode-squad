@@ -15,8 +15,9 @@ export async function handleEnqueueCommand(): Promise<void> {
     return;
   }
 
-  const agentName = await vscode.window.showQuickPick(names, {
-    placeHolder: 'Select target agent',
+  const allOption = '$(organization) Entire Squad';
+  const agentName = await vscode.window.showQuickPick([allOption, ...names], {
+    placeHolder: 'Select target agent or entire squad',
   });
 
   if (!agentName) {
@@ -32,6 +33,11 @@ export async function handleEnqueueCommand(): Promise<void> {
     return;
   }
 
-  const item = commandQueueManager.enqueue(agentName, command);
-  vscode.window.showInformationMessage(`Squad: Command queued for ${agentName} (${item.id})`);
+  if (agentName === allOption) {
+    const items = names.map(name => commandQueueManager.enqueue(name, command));
+    vscode.window.showInformationMessage(`Squad: Command queued for all ${items.length} agents`);
+  } else {
+    const item = commandQueueManager.enqueue(agentName, command);
+    vscode.window.showInformationMessage(`Squad: Command queued for ${agentName} (${item.id})`);
+  }
 }
