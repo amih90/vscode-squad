@@ -149,6 +149,34 @@ export class DashboardPanel {
       case 'agent-selected':
         // Selection tracking only — no action needed on host
         break;
+      case 'mark-queue-complete': {
+        if (message.success) {
+          commandQueueManager.markCompleted(message.id, message.result);
+        } else {
+          commandQueueManager.markFailed(message.id, message.result);
+        }
+        // Update agent status to idle
+        const item = commandQueueManager.getQueue().find((i) => i.id === message.id);
+        if (item) {
+          eventBus.emit('agent-status', { agentName: item.agentName, status: 'idle' });
+        }
+        this.sendStateUpdate();
+        break;
+      }
+      case 'mark-all-running-complete': {
+        const running = commandQueueManager.getPending();
+        const affectedAgents = new Set<string>();
+        for (const item of running) {
+          commandQueueManager.markCompleted(item.id, 'Marked complete by user');
+          affectedAgents.add(item.agentName);
+        }
+        // Update all affected agents to idle
+        for (const agentName of affectedAgents) {
+          eventBus.emit('agent-status', { agentName, status: 'idle' });
+        }
+        this.sendStateUpdate();
+        break;
+      }
     }
   }
 

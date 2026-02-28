@@ -66,7 +66,9 @@ export type WebviewToHostMessage =
   | { type: 'select-agent'; name: string }
   | { type: 'clear-logs' }
   | { type: 'enqueue-command'; agent: string; command: string }
-  | { type: 'agent-selected'; name: string | null };
+  | { type: 'agent-selected'; name: string | null }
+  | { type: 'mark-queue-complete'; id: string; success: boolean; result?: string }
+  | { type: 'mark-all-running-complete' };
 
 export type HostToWebviewMessage =
   | { type: 'state-update'; data: DashboardState }

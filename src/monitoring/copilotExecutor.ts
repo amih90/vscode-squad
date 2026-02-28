@@ -66,14 +66,27 @@ ${agentSummary}
 ### Task:
 ${task}
 
-### Instructions:
+### CRITICAL: Status Reporting Protocol
+**You MUST follow this protocol exactly for EACH agent:**
+
+1. **BEFORE starting**, report the plan for each agent:
+   \`@squad /progress @AgentName Starting: <brief plan for this agent>\`
+
+2. **During execution**, report progress after each significant step:
+   \`@squad /progress @AgentName <what was done>\`
+   
+3. **When each agent completes their part**:
+   - Success: \`@squad /complete @AgentName success <summary>\`
+   - Failure: \`@squad /complete @AgentName failure <reason>\`
+
+### Execution Rules:
 1. Analyze the task and determine which agent(s) should handle it based on their roles
 2. Execute the task, working within the scope of the appropriate agent's responsibilities
 3. If the task spans multiple agents, break it down and handle each part according to the relevant agent's charter
-4. Report progress: \`@squad /progress @AgentName <message>\`
-5. When each agent finishes: \`@squad /complete @AgentName success|failure <summary>\`
+4. **Never skip status reports** - the squad dashboard tracks all agent progress
+5. Report completion for ALL agents BEFORE giving your final response
 
-Begin execution.`;
+Begin now by reporting your starting plan for each agent.`;
 
     // Mark all queue items as running
     queueItemIds.forEach(id => commandQueueManager.markRunning(id));
@@ -107,13 +120,26 @@ ${charterSection}
 ### Your Task:
 ${task}
 
-### Instructions:
-1. Work within your role as ${agent.role}
-2. Follow best practices for your role
-3. Use \`@squad /progress @${agentName} <message>\` to report progress during work
-4. When finished, use \`@squad /complete @${agentName} success <summary>\` or \`@squad /complete @${agentName} failure <reason>\`
+### CRITICAL: Status Reporting Protocol
+**You MUST follow this protocol exactly:**
 
-Begin execution.`;
+1. **BEFORE starting work**, report your plan:
+   \`@squad /progress @${agentName} Starting: <brief plan>\`
+
+2. **During execution**, report progress after each significant step (every 1-2 actions):
+   \`@squad /progress @${agentName} <what you just did or are doing>\`
+
+3. **When finished**, report completion:
+   - Success: \`@squad /complete @${agentName} success <summary of what was done>\`
+   - Failure: \`@squad /complete @${agentName} failure <what went wrong>\`
+
+### Execution Rules:
+- Work within your role as ${agent.role}
+- Follow best practices for your role
+- **Never skip status reports** - the squad dashboard tracks your progress
+- Report completion BEFORE giving your final response to the user
+
+Begin now by reporting your starting plan.`;
   }
 
   /**
