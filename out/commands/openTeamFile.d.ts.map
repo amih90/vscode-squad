@@ -1,0 +1,1 @@
+{"version":3,"file":"openTeamFile.d.ts","sourceRoot":"","sources":["../../src/commands/openTeamFile.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,MAAM,MAAM,QAAQ,CAAC;AAGjC,OAAO,EAAE,kBAAkB,EAAE,MAAM,6BAA6B,CAAC;AAEjE,wBAAsB,kBAAkB,CACtC,OAAO,EAAE,MAAM,CAAC,gBAAgB,EAChC,aAAa,EAAE,MAAM,EACrB,cAAc,CAAC,EAAE,kBAAkB,GAClC,OAAO,CAAC,IAAI,CAAC,CAYf"}

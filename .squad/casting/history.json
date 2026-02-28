@@ -1,0 +1,42 @@
+{
+  "universe_usage_history": [
+    {
+      "assignment_id": "2026-02-27-initial",
+      "universe": "The Matrix",
+      "used_at": "2026-02-27T00:00:00Z",
+      "agent_count": 5
+    }
+  ],
+  "assignment_cast_snapshots": {
+    "2026-02-27-initial": {
+      "universe": "The Matrix",
+      "members": [
+        {
+          "agent_id": "neo",
+          "name": "Neo",
+          "role": "Lead / Architect"
+        },
+        {
+          "agent_id": "trinity",
+          "name": "Trinity",
+          "role": "Frontend Dev"
+        },
+        {
+          "agent_id": "morpheus",
+          "name": "Morpheus",
+          "role": "Backend / Integration Dev"
+        },
+        {
+          "agent_id": "switch",
+          "name": "Switch",
+          "role": "Tester / Reviewer"
+        },
+        {
+          "agent_id": "tank",
+          "name": "Tank",
+          "role": "VS Code Extension Dev"
+        }
+      ]
+    }
+  }
+}

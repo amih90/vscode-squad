@@ -1,0 +1,82 @@
+{
+  "name": "vscode-squad",
+  "displayName": "VS Code Squad",
+  "description": "Team roster management for VS Code",
+  "version": "0.0.1",
+  "publisher": "squad",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "workspaceContains:.squad/team.md",
+    "onCommand:squad.initialize"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "squad.initialize",
+        "title": "Squad: Initialize Team"
+      },
+      {
+        "command": "squad.openRoster",
+        "title": "Squad: Open Roster"
+      },
+      {
+        "command": "squad.addMember",
+        "title": "Squad: Add Member"
+      },
+      {
+        "command": "squad.removeMember",
+        "title": "Squad: Remove Member"
+      },
+      {
+        "command": "squad.editMember",
+        "title": "Squad: Edit Member"
+      },
+      {
+        "command": "squad.refreshRoster",
+        "title": "Squad: Refresh Roster"
+      },
+      {
+        "command": "squad.openTeamFile",
+        "title": "Squad: Open Team File"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "squadExplorer",
+          "title": "Squad",
+          "icon": "$(people)"
+        }
+      ]
+    },
+    "views": {
+      "squadExplorer": [
+        {
+          "id": "squad.rosterView",
+          "name": "Team Roster"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.96.0",
+    "@types/node": "^20.0.0",
+    "@types/mocha": "^10.0.0",
+    "typescript": "^5.2.0",
+    "@vscode/vsce": "^2.20.0"
+  }
+}
