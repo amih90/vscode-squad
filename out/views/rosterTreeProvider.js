@@ -35,54 +35,41 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RosterItem = exports.TeamRosterProvider = void 0;
 const vscode = __importStar(require("vscode"));
-const teamState_1 = require("../team/teamState");
-const logger_1 = require("../utils/logger");
+const squadRegistry_1 = require("../core/squadRegistry");
 class TeamRosterProvider {
-    constructor(initialState) {
+    constructor() {
         this._onDidChangeTreeData = new vscode.EventEmitter();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
-        this.state = initialState;
-        (0, logger_1.log)('TeamRosterProvider initialized');
     }
     refresh() {
-        const newState = (0, teamState_1.getTeamState)();
-        if (newState) {
-            this.state = newState;
-        }
-        (0, logger_1.log)('Tree view refreshed');
-        this._onDidChangeTreeData.fire(null);
+        this._onDidChangeTreeData.fire(undefined);
     }
     getTreeItem(element) {
         return element;
     }
     getChildren(element) {
-        if (!this.state) {
-            (0, logger_1.log)('No team state, returning empty children');
-            return Promise.resolve([]);
+        const ctx = squadRegistry_1.squadRegistry.activeContext;
+        if (!ctx) {
+            return [];
         }
+        const { teamState, agents } = ctx;
         if (!element) {
-            // Root level: return sections
-            return Promise.resolve([
+            return [
                 new RosterItem('Coordinator', 'Coordinator section', vscode.TreeItemCollapsibleState.Collapsed),
                 new RosterItem('Members', 'Members section', vscode.TreeItemCollapsibleState.Collapsed),
                 new RosterItem('Coding Agent', 'Coding Agent section', vscode.TreeItemCollapsibleState.Collapsed),
-            ]);
+            ];
         }
-        // Child level: return members in section
-        if (element.label === 'Coordinator' && this.state.coordinator) {
-            return Promise.resolve([
-                createMemberItem(this.state.coordinator),
-            ]);
+        if (element.label === 'Coordinator' && teamState.coordinator) {
+            return [createMemberItem(teamState.coordinator, agents)];
         }
         if (element.label === 'Members') {
-            return Promise.resolve(this.state.members.map(createMemberItem));
+            return teamState.members.map((m) => createMemberItem(m, agents));
         }
-        if (element.label === 'Coding Agent' && this.state.codingAgent) {
-            return Promise.resolve([
-                createMemberItem(this.state.codingAgent),
-            ]);
+        if (element.label === 'Coding Agent' && teamState.codingAgent) {
+            return [createMemberItem(teamState.codingAgent, agents)];
         }
-        return Promise.resolve([]);
+        return [];
     }
     getParent(element) {
         if (element.parent) {
@@ -93,19 +80,49 @@ class TeamRosterProvider {
 }
 exports.TeamRosterProvider = TeamRosterProvider;
 class RosterItem extends vscode.TreeItem {
-    constructor(label, tooltip, collapsibleState, parent, contextValue) {
+    constructor(label, tooltip, collapsibleState, parent, contextValue, description) {
         super(label, collapsibleState);
-        this.label = label;
-        this.tooltip = tooltip;
-        this.collapsibleState = collapsibleState;
         this.parent = parent;
-        this.contextValue = contextValue;
         this.tooltip = tooltip;
+        this.contextValue = contextValue;
+        if (description) {
+            this.description = description;
+        }
     }
 }
 exports.RosterItem = RosterItem;
-function createMemberItem(member) {
-    const contextValue = member.section === 'coordinator' ? 'coordinator' : 'member';
-    return new RosterItem(member.name, `${member.name} - ${member.role}${member.status ? ` (${member.status})` : ''}`, vscode.TreeItemCollapsibleState.None, member.section === 'coordinator' ? 'Coordinator' : member.section === 'codingAgent' ? 'Coding Agent' : 'Members', contextValue);
+function resolveContextValue(member) {
+    if (member.section === 'coordinator') {
+        return 'coordinator';
+    }
+    if (member.section === 'codingAgent') {
+        return 'codingAgent';
+    }
+    const lower = member.name.toLowerCase();
+    if (lower === 'scribe') {
+        return 'scribe';
+    }
+    if (lower === 'ralph') {
+        return 'ralph';
+    }
+    return 'member';
+}
+function parentLabel(member) {
+    if (member.section === 'coordinator') {
+        return 'Coordinator';
+    }
+    if (member.section === 'codingAgent') {
+        return 'Coding Agent';
+    }
+    return 'Members';
+}
+function createMemberItem(member, agents) {
+    const runtime = agents.get(member.name);
+    const emoji = runtime?.emoji ?? member.notes ?? '👤';
+    const label = `${emoji} ${member.name}`;
+    const status = runtime?.status ?? member.status ?? 'idle';
+    const tooltip = `${member.name} - ${member.role} (${status})`;
+    const contextValue = resolveContextValue(member);
+    return new RosterItem(label, tooltip, vscode.TreeItemCollapsibleState.None, parentLabel(member), contextValue, member.role);
 }
 //# sourceMappingURL=rosterTreeProvider.js.map

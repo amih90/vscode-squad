@@ -36,7 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleOpenRoster = handleOpenRoster;
 const vscode = __importStar(require("vscode"));
 const logger_1 = require("../utils/logger");
-async function handleOpenRoster(context, workspaceRoot, rosterProvider) {
+async function handleOpenRoster(context, rosterProvider) {
     (0, logger_1.log)('Command: squad.openRoster called');
     vscode.window.showInformationMessage('Squad: Roster view is now visible in the sidebar');
     // TODO: Focus the tree view if it exists

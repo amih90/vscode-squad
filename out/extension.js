@@ -37,43 +37,100 @@ exports.activate = activate;
 exports.deactivate = deactivate;
 const vscode = __importStar(require("vscode"));
 const logger_1 = require("./utils/logger");
-const teamState_1 = require("./team/teamState");
+const squadRegistry_1 = require("./core/squadRegistry");
+const eventBus_1 = require("./core/eventBus");
 const rosterTreeProvider_1 = require("./views/rosterTreeProvider");
-const watcher_1 = require("./team/watcher");
+const squadSelectorProvider_1 = require("./views/squadSelectorProvider");
+const activityProvider_1 = require("./views/activityProvider");
 const index_1 = require("./commands/index");
-let rosterProvider;
-let disposables = [];
+let outputChannel;
 async function activate(context) {
-    (0, logger_1.log)('VS Code Squad extension activated');
-    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-    if (!workspaceRoot) {
-        (0, logger_1.log)('No workspace folder found');
-        return;
-    }
-    // Load team state if .squad/team.md exists
-    const teamState = await (0, teamState_1.loadTeamState)(workspaceRoot);
-    if (teamState) {
-        (0, logger_1.log)('Team state loaded, initializing roster view');
-        // Initialize tree data provider
-        rosterProvider = new rosterTreeProvider_1.TeamRosterProvider(teamState);
-        const treeView = vscode.window.createTreeView('squad.rosterView', {
-            treeDataProvider: rosterProvider,
-        });
-        disposables.push(treeView);
-        // Setup file watcher
-        const watcher = (0, watcher_1.setupWatcher)(workspaceRoot, rosterProvider);
-        disposables.push(watcher);
-    }
+    outputChannel = vscode.window.createOutputChannel('Squad');
+    (0, logger_1.log)('VS Code Squad extension v2 activated');
+    // Scan workspace folders for squads
+    await squadRegistry_1.squadRegistry.scanWorkspaceFolders();
+    // Create tree view providers
+    const selectorProvider = new squadSelectorProvider_1.SquadSelectorProvider();
+    const rosterProvider = new rosterTreeProvider_1.TeamRosterProvider();
+    const activityProvider = new activityProvider_1.ActivityProvider();
+    // Register tree views
+    const selectorView = vscode.window.createTreeView('squad.squadSelector', {
+        treeDataProvider: selectorProvider,
+    });
+    const rosterView = vscode.window.createTreeView('squad.rosterView', {
+        treeDataProvider: rosterProvider,
+    });
+    const activityView = vscode.window.createTreeView('squad.activityView', {
+        treeDataProvider: activityProvider,
+    });
+    // Status bar items
+    const squadNameItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+    squadNameItem.command = 'squad.switchSquad';
+    const healthItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
+    healthItem.command = 'squad.openDashboard';
+    updateStatusBar(squadNameItem, healthItem);
+    // Event listeners
+    eventBus_1.eventBus.on('team-changed', () => {
+        rosterProvider.refresh();
+        selectorProvider.refresh();
+        updateStatusBar(squadNameItem, healthItem);
+    });
+    eventBus_1.eventBus.on('squad-activated', () => {
+        rosterProvider.refresh();
+        selectorProvider.refresh();
+        updateStatusBar(squadNameItem, healthItem);
+    });
+    eventBus_1.eventBus.on('log-entry', () => {
+        activityProvider.refresh();
+    });
+    eventBus_1.eventBus.on('stats-updated', () => {
+        updateStatusBar(squadNameItem, healthItem);
+    });
+    // Workspace folder changes
+    const folderWatcher = vscode.workspace.onDidChangeWorkspaceFolders(async (e) => {
+        for (const added of e.added) {
+            await squadRegistry_1.squadRegistry.registerSquad(added.uri.fsPath);
+        }
+        for (const removed of e.removed) {
+            squadRegistry_1.squadRegistry.unregisterSquad(removed.uri.fsPath);
+        }
+        selectorProvider.refresh();
+        rosterProvider.refresh();
+    });
     // Register all commands
-    const commandDisposables = (0, index_1.registerCommands)(context, workspaceRoot, rosterProvider);
-    disposables.push(...commandDisposables);
-    // Add all disposables to context
-    context.subscriptions.push(...disposables);
-    (0, logger_1.log)('Extension ready');
+    const commandDisposables = (0, index_1.registerCommands)(context, rosterProvider);
+    // Auto-open dashboard if configured
+    const autoOpen = vscode.workspace
+        .getConfiguration('squad')
+        .get('autoOpenDashboard', false);
+    if (autoOpen && squadRegistry_1.squadRegistry.activeContext) {
+        vscode.commands.executeCommand('squad.openDashboard');
+    }
+    // Push all disposables
+    context.subscriptions.push(outputChannel, selectorView, rosterView, activityView, squadNameItem, healthItem, folderWatcher, ...commandDisposables, {
+        dispose: () => {
+            squadRegistry_1.squadRegistry.dispose();
+            eventBus_1.eventBus.dispose();
+        },
+    });
+}
+function updateStatusBar(nameItem, healthItem) {
+    const ctx = squadRegistry_1.squadRegistry.activeContext;
+    if (ctx) {
+        nameItem.text = `$(people) ${ctx.teamState.projectContext?.description ?? 'Squad'}`;
+        nameItem.show();
+        const score = ctx.statistics.healthScore;
+        const emoji = score >= 80 ? '$(pass)' : score >= 50 ? '$(warning)' : '$(error)';
+        healthItem.text = `${emoji} ${score}`;
+        healthItem.tooltip = `Squad Health Score: ${score}/100`;
+        healthItem.show();
+    }
+    else {
+        nameItem.hide();
+        healthItem.hide();
+    }
 }
 function deactivate() {
     (0, logger_1.log)('VS Code Squad extension deactivated');
-    disposables.forEach((d) => d.dispose());
-    disposables = [];
 }
 //# sourceMappingURL=extension.js.map

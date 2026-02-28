@@ -36,7 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleRemoveMember = handleRemoveMember;
 const vscode = __importStar(require("vscode"));
 const logger_1 = require("../utils/logger");
-async function handleRemoveMember(context, workspaceRoot, rosterProvider) {
+async function handleRemoveMember(context, rosterProvider) {
     (0, logger_1.log)('Command: squad.removeMember called');
     const memberName = await vscode.window.showInputBox({
         prompt: 'Enter the name of the member to remove',

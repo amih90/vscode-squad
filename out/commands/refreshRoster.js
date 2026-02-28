@@ -36,7 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleRefreshRoster = handleRefreshRoster;
 const vscode = __importStar(require("vscode"));
 const logger_1 = require("../utils/logger");
-async function handleRefreshRoster(context, workspaceRoot, rosterProvider) {
+async function handleRefreshRoster(context, rosterProvider) {
     (0, logger_1.log)('Command: squad.refreshRoster called');
     if (rosterProvider) {
         rosterProvider.refresh();

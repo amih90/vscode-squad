@@ -36,7 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleEditMember = handleEditMember;
 const vscode = __importStar(require("vscode"));
 const logger_1 = require("../utils/logger");
-async function handleEditMember(context, workspaceRoot, rosterProvider) {
+async function handleEditMember(context, rosterProvider) {
     (0, logger_1.log)('Command: squad.editMember called');
     const memberName = await vscode.window.showInputBox({
         prompt: 'Enter the name of the member to edit',

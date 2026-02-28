@@ -37,8 +37,14 @@ exports.handleOpenTeamFile = handleOpenTeamFile;
 const vscode = __importStar(require("vscode"));
 const path = __importStar(require("path"));
 const logger_1 = require("../utils/logger");
-async function handleOpenTeamFile(context, workspaceRoot, rosterProvider) {
+const squadRegistry_1 = require("../core/squadRegistry");
+async function handleOpenTeamFile(context) {
     (0, logger_1.log)('Command: squad.openTeamFile called');
+    const workspaceRoot = squadRegistry_1.squadRegistry.activeContext?.rootPath ?? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (!workspaceRoot) {
+        vscode.window.showWarningMessage('No workspace folder open');
+        return;
+    }
     const teamFilePath = path.join(workspaceRoot, '.squad', 'team.md');
     const teamFileUri = vscode.Uri.file(teamFilePath);
     try {

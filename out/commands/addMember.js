@@ -36,7 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleAddMember = handleAddMember;
 const vscode = __importStar(require("vscode"));
 const logger_1 = require("../utils/logger");
-async function handleAddMember(context, workspaceRoot, rosterProvider) {
+async function handleAddMember(context, rosterProvider) {
     (0, logger_1.log)('Command: squad.addMember called');
     const name = await vscode.window.showInputBox({
         prompt: 'Enter member name',

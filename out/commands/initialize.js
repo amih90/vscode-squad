@@ -36,7 +36,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleInitialize = handleInitialize;
 const vscode = __importStar(require("vscode"));
 const logger_1 = require("../utils/logger");
-async function handleInitialize(context, workspaceRoot) {
+async function handleInitialize(context) {
+    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (!workspaceRoot) {
+        vscode.window.showWarningMessage('No workspace folder open');
+        return;
+    }
     (0, logger_1.log)('Command: squad.initialize called');
     vscode.window.showInformationMessage('Squad: Initialize will set up .squad/team.md in this repository');
     // TODO: Implement actual initialization logic

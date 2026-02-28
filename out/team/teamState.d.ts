@@ -12,6 +12,11 @@ export interface TeamState {
     codingAgent: Member | null;
     filePath: string;
     lastModified: number;
+    projectContext?: {
+        description?: string;
+        techStack?: string;
+        user?: string;
+    };
 }
 export declare function loadTeamState(workspaceRoot: string): Promise<TeamState | null>;
 export declare function getTeamState(): TeamState | null;

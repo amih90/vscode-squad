@@ -1,6 +1,6 @@
 import { TeamState } from './teamState';
 /**
- * Parse markdown team file content into TeamState
+ * Parse markdown team file content into TeamState.
  * @param content - Raw markdown file content
  * @param filePath - Path to the team file
  * @returns Parsed TeamState

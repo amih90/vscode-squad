@@ -39,6 +39,7 @@ exports.updateTeamState = updateTeamState;
 const path = __importStar(require("path"));
 const fs = __importStar(require("fs"));
 const logger_1 = require("../utils/logger");
+const parser_1 = require("./parser");
 let currentTeamState = null;
 async function loadTeamState(workspaceRoot) {
     const teamFilePath = path.join(workspaceRoot, '.squad', 'team.md');
@@ -48,33 +49,7 @@ async function loadTeamState(workspaceRoot) {
     }
     try {
         const content = fs.readFileSync(teamFilePath, 'utf-8');
-        // TODO: Parse markdown content into TeamState
-        // For now, return mock data
-        currentTeamState = {
-            coordinator: {
-                name: 'Squad',
-                role: 'Coordinator',
-                notes: 'Team lead',
-                section: 'coordinator',
-            },
-            members: [
-                {
-                    name: 'Neo',
-                    role: 'Lead / Architect',
-                    charter: '.squad/agents/neo/charter.md',
-                    status: '✅ Active',
-                    section: 'members',
-                },
-            ],
-            codingAgent: {
-                name: '@copilot',
-                role: 'Coding Agent',
-                status: '🤖 Coding Agent',
-                section: 'codingAgent',
-            },
-            filePath: teamFilePath,
-            lastModified: Date.now(),
-        };
+        currentTeamState = (0, parser_1.parseTeamFile)(content, teamFilePath);
         (0, logger_1.log)('Team state loaded');
         return currentTeamState;
     }
