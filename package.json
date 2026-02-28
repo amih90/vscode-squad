@@ -4,6 +4,15 @@
   "description": "Team roster management for VS Code",
   "version": "0.0.1",
   "publisher": "squad",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amih90/vscode-squad.git"
+  },
+  "bugs": {
+    "url": "https://github.com/amih90/vscode-squad/issues"
+  },
+  "homepage": "https://github.com/amih90/vscode-squad#readme",
   "engines": {
     "vscode": "^1.96.0"
   },

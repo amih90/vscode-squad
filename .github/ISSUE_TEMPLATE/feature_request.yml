@@ -1,0 +1,55 @@
+name: Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! Please describe your idea below.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What problem does this feature solve? What's the use case?
+      placeholder: I often need to... but currently I have to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How would you like this to work?
+      placeholder: It would be great if the extension could...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Have you considered any alternatives or workarounds?
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Feature scope
+      description: Which part of the extension would this affect?
+      options:
+        - Commands
+        - Sidebar / Views
+        - Dashboard
+        - Chat Participant (@squad)
+        - Squad Protocol (file formats)
+        - Templates
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Any mockups, references, or additional information.
