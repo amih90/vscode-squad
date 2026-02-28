@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src {{cspSource}}; script-src 'nonce-{{nonce}}'; img-src {{cspSource}} https:;">
+  <link rel="stylesheet" href="{{resetUri}}">
+  <link rel="stylesheet" href="{{themeUri}}">
+  <link rel="stylesheet" href="{{cssUri}}">
+  <title>Agent Detail</title>
+</head>
+<body>
+  <div id="loading" class="loading">
+    <div class="loading__spinner"></div>
+    <div class="loading__text">Loading agent data&hellip;</div>
+  </div>
+
+  <div id="agent-detail" class="agent-detail" hidden>
+    <div id="agent-header" class="agent-header"></div>
+
+    <div id="stats-row" class="stats-row"></div>
+
+    <div class="detail-section">
+      <div class="detail-section__header">Recent Activity</div>
+      <div id="activity-body" class="detail-section__body"></div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section__header">History</div>
+      <div id="history-body" class="detail-section__body"></div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section__header">Charter</div>
+      <div id="charter-body" class="detail-section__body"></div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section__header">Command Queue</div>
+      <div id="queue-body" class="detail-section__body"></div>
+    </div>
+  </div>
+
+  <script nonce="{{nonce}}" src="{{scriptUri}}"></script>
+</body>
+</html>

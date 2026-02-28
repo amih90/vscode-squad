@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src {{cspSource}}; script-src 'nonce-{{nonce}}'; img-src {{cspSource}} https:;">
+  <link rel="stylesheet" href="{{resetUri}}">
+  <link rel="stylesheet" href="{{themeUri}}">
+  <link rel="stylesheet" href="{{cssUri}}">
+  <title>Squad Dashboard</title>
+</head>
+<body>
+  <div id="loading" class="loading">
+    <div class="loading__spinner"></div>
+    <div class="loading__text">Loading squad data&hellip;</div>
+  </div>
+
+  <div id="dashboard" class="dashboard" hidden>
+    <div id="stats-bar" class="stats-bar"></div>
+
+    <div class="panels">
+      <div class="agent-panel">
+        <div class="panel-header">Agents</div>
+        <div id="agent-list" class="agent-list"></div>
+      </div>
+
+      <div class="log-panel">
+        <div class="panel-header">Logs</div>
+        <div class="log-toolbar">
+          <select id="filter-agent" class="log-filter" aria-label="Filter by agent">
+            <option value="">All agents</option>
+          </select>
+          <select id="filter-level" class="log-filter" aria-label="Filter by level">
+            <option value="">All levels</option>
+            <option value="debug">Debug</option>
+            <option value="info">Info</option>
+            <option value="warn">Warn</option>
+            <option value="error">Error</option>
+          </select>
+        </div>
+        <div id="log-entries" class="log-entries"></div>
+      </div>
+
+      <div class="queue-panel">
+        <div class="panel-header">Command Queue</div>
+        <div id="queue-list" class="queue-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script nonce="{{nonce}}" src="{{scriptUri}}"></script>
+</body>
+</html>

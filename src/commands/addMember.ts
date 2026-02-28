@@ -4,7 +4,6 @@ import { TeamRosterProvider } from '../views/rosterTreeProvider';
 
 export async function handleAddMember(
   context: vscode.ExtensionContext,
-  workspaceRoot: string,
   rosterProvider?: TeamRosterProvider
 ): Promise<void> {
   log('Command: squad.addMember called');

@@ -1,0 +1,42 @@
+:root {
+  --squad-bg: var(--vscode-editor-background);
+  --squad-fg: var(--vscode-editor-foreground);
+  --squad-border: var(--vscode-panel-border);
+  --squad-header-bg: var(--vscode-sideBarSectionHeader-background);
+  --squad-header-fg: var(--vscode-sideBarSectionHeader-foreground);
+  --squad-button-bg: var(--vscode-button-background);
+  --squad-button-fg: var(--vscode-button-foreground);
+  --squad-button-hover: var(--vscode-button-hoverBackground);
+  --squad-input-bg: var(--vscode-input-background);
+  --squad-input-fg: var(--vscode-input-foreground);
+  --squad-input-border: var(--vscode-input-border);
+  --squad-badge-bg: var(--vscode-badge-background);
+  --squad-badge-fg: var(--vscode-badge-foreground);
+  --squad-link: var(--vscode-textLink-foreground);
+  --squad-error: var(--vscode-errorForeground);
+  --squad-warning: var(--vscode-editorWarning-foreground);
+  --squad-success: var(--vscode-testing-iconPassed);
+  --squad-info: var(--vscode-editorInfo-foreground);
+  --squad-card-bg: var(--vscode-editorWidget-background);
+  --squad-card-border: var(--vscode-editorWidget-border);
+  --squad-scrollbar: var(--vscode-scrollbarSlider-background);
+  --squad-scrollbar-hover: var(--vscode-scrollbarSlider-hoverBackground);
+  --squad-font-family: var(--vscode-font-family);
+  --squad-font-size: var(--vscode-font-size);
+  --squad-mono-font: var(--vscode-editor-font-family);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--squad-font-family);
+  font-size: var(--squad-font-size);
+  color: var(--squad-fg);
+  background: var(--squad-bg);
+  padding: 0;
+  overflow-x: hidden;
+}

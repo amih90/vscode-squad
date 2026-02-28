@@ -12,6 +12,7 @@
   ],
   "activationEvents": [
     "workspaceContains:.squad/team.md",
+    "workspaceContains:.ai-team/team.md",
     "onCommand:squad.initialize"
   ],
   "main": "./out/extension.js",
@@ -44,6 +45,79 @@
       {
         "command": "squad.openTeamFile",
         "title": "Squad: Open Team File"
+      },
+      {
+        "command": "squad.openDashboard",
+        "title": "Squad: Open Dashboard",
+        "icon": "$(dashboard)"
+      },
+      {
+        "command": "squad.openAgentDetail",
+        "title": "Squad: Open Agent Detail"
+      },
+      {
+        "command": "squad.showLogs",
+        "title": "Squad: Show Agent Logs"
+      },
+      {
+        "command": "squad.clearLogs",
+        "title": "Squad: Clear Logs"
+      },
+      {
+        "command": "squad.filterLogs",
+        "title": "Squad: Filter Logs"
+      },
+      {
+        "command": "squad.enqueueCommand",
+        "title": "Squad: Enqueue Agent Command"
+      },
+      {
+        "command": "squad.viewQueue",
+        "title": "Squad: View Command Queue"
+      },
+      {
+        "command": "squad.clearQueue",
+        "title": "Squad: Clear Completed Queue Items"
+      },
+      {
+        "command": "squad.switchSquad",
+        "title": "Squad: Switch Active Squad"
+      },
+      {
+        "command": "squad.createSquad",
+        "title": "Squad: Create New Squad"
+      },
+      {
+        "command": "squad.deleteSquad",
+        "title": "Squad: Delete Squad"
+      },
+      {
+        "command": "squad.viewDecisions",
+        "title": "Squad: View Decision Timeline"
+      },
+      {
+        "command": "squad.viewHistory",
+        "title": "Squad: View Agent History"
+      },
+      {
+        "command": "squad.showHealthScore",
+        "title": "Squad: Show Health Score"
+      },
+      {
+        "command": "squad.runCeremony",
+        "title": "Squad: Run Ceremony"
+      },
+      {
+        "command": "squad.editCharter",
+        "title": "Squad: Edit Agent Charter"
+      },
+      {
+        "command": "squad.searchSquads",
+        "title": "Squad: Search Across Squads"
+      },
+      {
+        "command": "squad.showStats",
+        "title": "Squad: Show Statistics"
       }
     ],
     "viewsContainers": {
@@ -58,10 +132,85 @@
     "views": {
       "squadExplorer": [
         {
+          "id": "squad.squadSelector",
+          "name": "Squads"
+        },
+        {
           "id": "squad.rosterView",
           "name": "Team Roster"
+        },
+        {
+          "id": "squad.activityView",
+          "name": "Activity"
         }
       ]
+    },
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "squad.openAgentDetail",
+          "when": "view == squad.rosterView && viewItem == member",
+          "group": "inline"
+        },
+        {
+          "command": "squad.viewHistory",
+          "when": "view == squad.rosterView && viewItem == member"
+        },
+        {
+          "command": "squad.editCharter",
+          "when": "view == squad.rosterView && viewItem == member"
+        },
+        {
+          "command": "squad.showLogs",
+          "when": "view == squad.rosterView && viewItem == member"
+        },
+        {
+          "command": "squad.switchSquad",
+          "when": "view == squad.squadSelector"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "squad.openDashboard",
+          "when": "view == squad.rosterView",
+          "group": "navigation"
+        },
+        {
+          "command": "squad.refreshRoster",
+          "when": "view == squad.rosterView",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Squad",
+      "properties": {
+        "squad.logBufferSize": {
+          "type": "number",
+          "default": 1000,
+          "description": "Maximum number of log entries to keep in memory"
+        },
+        "squad.autoOpenDashboard": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically open the dashboard when a squad is detected"
+        },
+        "squad.notifications.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notifications for agent events"
+        },
+        "squad.notifications.errors": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notifications for agent errors"
+        },
+        "squad.healthScore.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show health score in status bar"
+        }
+      }
     }
   },
   "scripts": {

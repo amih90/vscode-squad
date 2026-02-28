@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import { log } from '../utils/logger';
+import { parseTeamFile } from './parser';
 
 export interface Member {
   name: string;
@@ -17,6 +18,11 @@ export interface TeamState {
   codingAgent: Member | null;
   filePath: string;
   lastModified: number;
+  projectContext?: {
+    description?: string;
+    techStack?: string;
+    user?: string;
+  };
 }
 
 let currentTeamState: TeamState | null = null;
@@ -31,33 +37,7 @@ export async function loadTeamState(workspaceRoot: string): Promise<TeamState | 
 
   try {
     const content = fs.readFileSync(teamFilePath, 'utf-8');
-    // TODO: Parse markdown content into TeamState
-    // For now, return mock data
-    currentTeamState = {
-      coordinator: {
-        name: 'Squad',
-        role: 'Coordinator',
-        notes: 'Team lead',
-        section: 'coordinator',
-      },
-      members: [
-        {
-          name: 'Neo',
-          role: 'Lead / Architect',
-          charter: '.squad/agents/neo/charter.md',
-          status: '✅ Active',
-          section: 'members',
-        },
-      ],
-      codingAgent: {
-        name: '@copilot',
-        role: 'Coding Agent',
-        status: '🤖 Coding Agent',
-        section: 'codingAgent',
-      },
-      filePath: teamFilePath,
-      lastModified: Date.now(),
-    };
+    currentTeamState = parseTeamFile(content, teamFilePath);
     log('Team state loaded');
     return currentTeamState;
   } catch (err) {

@@ -1,14 +1,17 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { log } from '../utils/logger';
-import { TeamRosterProvider } from '../views/rosterTreeProvider';
+import { squadRegistry } from '../core/squadRegistry';
 
 export async function handleOpenTeamFile(
-  context: vscode.ExtensionContext,
-  workspaceRoot: string,
-  rosterProvider?: TeamRosterProvider
+  context: vscode.ExtensionContext
 ): Promise<void> {
   log('Command: squad.openTeamFile called');
+  const workspaceRoot = squadRegistry.activeContext?.rootPath ?? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  if (!workspaceRoot) {
+    vscode.window.showWarningMessage('No workspace folder open');
+    return;
+  }
   const teamFilePath = path.join(workspaceRoot, '.squad', 'team.md');
   const teamFileUri = vscode.Uri.file(teamFilePath);
 
