@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { squadRegistry } from '../core/squadRegistry';
 import { commandQueueManager } from '../monitoring/commandQueue';
+import { copilotExecutor } from '../monitoring/copilotExecutor';
 
 export async function handleEnqueueCommand(): Promise<void> {
   const ctx = squadRegistry.activeContext;
@@ -36,8 +37,14 @@ export async function handleEnqueueCommand(): Promise<void> {
   if (agentName === allOption) {
     const items = names.map(name => commandQueueManager.enqueue(name, command));
     vscode.window.showInformationMessage(`Squad: Command queued for all ${items.length} agents`);
+    
+    // Execute via Copilot
+    await copilotExecutor.executeSquadTask(command, items.map(i => i.id));
   } else {
     const item = commandQueueManager.enqueue(agentName, command);
     vscode.window.showInformationMessage(`Squad: Command queued for ${agentName} (${item.id})`);
+    
+    // Execute via Copilot
+    await copilotExecutor.executeTask(agentName, command, item.id);
   }
 }

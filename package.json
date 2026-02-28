@@ -2,8 +2,8 @@
   "name": "vscode-squad",
   "displayName": "VS Code Squad",
   "description": "Team roster management for VS Code",
-  "version": "0.0.1",
-  "publisher": "squad",
+  "version": "0.0.2",
+  "publisher": "amih90",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -457,6 +457,14 @@
           {
             "name": "agents",
             "description": "List agents or view details of a specific agent"
+          },
+          {
+            "name": "complete",
+            "description": "Signal task completion (used by Copilot to report back)"
+          },
+          {
+            "name": "progress",
+            "description": "Report task progress (used by Copilot during execution)"
           }
         ]
       }

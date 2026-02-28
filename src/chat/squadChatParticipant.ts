@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
 import { squadRegistry, SquadContext } from '../core/squadRegistry';
 import { commandQueueManager } from '../monitoring/commandQueue';
+import { copilotExecutor } from '../monitoring/copilotExecutor';
+import { eventBus } from '../core/eventBus';
+import { logStore } from '../monitoring/logStore';
 import { log } from '../utils/logger';
 
 const PARTICIPANT_ID = 'squad.chat';
@@ -38,6 +41,14 @@ const handler: vscode.ChatRequestHandler = async (
 
   if (command === 'agents') {
     return handleAgents(request, stream);
+  }
+
+  if (command === 'complete') {
+    return handleComplete(request, stream);
+  }
+
+  if (command === 'progress') {
+    return handleProgress(request, stream);
   }
 
   // Default: show help & squad context summary
@@ -164,12 +175,26 @@ async function handleAssign(request: vscode.ChatRequest, stream: vscode.ChatResp
     }
     const item = commandQueueManager.enqueue(found, task);
     stream.markdown(`$(check) Task assigned to **${found}**: *${task}*\n\nQueue ID: \`${item.id}\``);
+    stream.markdown('\n\n$(sync~spin) Sending to Copilot...');
+    
+    // Execute via Copilot
+    copilotExecutor.executeTask(found, task, item.id).catch(err => {
+      log('Failed to execute task via Copilot:', err);
+    });
+    
     return {};
   }
 
   // No @agent — assign to whole squad
   const items = agents.map(a => commandQueueManager.enqueue(a, prompt));
   stream.markdown(`$(check) Task assigned to all **${items.length}** agents: *${prompt}*`);
+  stream.markdown('\n\n$(sync~spin) Sending to Copilot...');
+  
+  // Execute via Copilot (squad task)
+  copilotExecutor.executeSquadTask(prompt, items.map(i => i.id)).catch(err => {
+    log('Failed to execute squad task via Copilot:', err);
+  });
+  
   return {};
 }
 
@@ -272,6 +297,116 @@ function handleAgents(request: vscode.ChatRequest, stream: vscode.ChatResponseSt
   return {};
 }
 
+/**
+ * Handle /complete — Copilot signals task completion
+ * Usage: @squad /complete @AgentName [success|failure] [summary]
+ */
+function handleComplete(request: vscode.ChatRequest, stream: vscode.ChatResponseStream): vscode.ChatResult {
+  const ctx = squadRegistry.activeContext;
+  if (!ctx) {
+    stream.markdown('No active squad.');
+    return {};
+  }
+
+  const prompt = request.prompt.trim();
+  // Parse: @AgentName success|failure summary
+  const match = prompt.match(/^@?(\S+)\s+(success|failure|done|error)(?:\s+(.*))?$/i);
+  
+  if (!match) {
+    stream.markdown('Usage: `@squad /complete @AgentName success|failure [summary]`\n\n');
+    stream.markdown('Example: `@squad /complete @Backend success Implemented user authentication`');
+    return {};
+  }
+
+  const [, agentName, statusRaw, summary] = match;
+  const isSuccess = statusRaw.toLowerCase() === 'success' || statusRaw.toLowerCase() === 'done';
+  
+  // Find the agent
+  const agent = ctx.agents.get(agentName);
+  if (!agent) {
+    const agents = [...ctx.agents.keys()];
+    stream.markdown(`Agent **${agentName}** not found. Available: ${agents.join(', ')}`);
+    return {};
+  }
+
+  // Find running queue item for this agent
+  const runningItems = commandQueueManager.getQueueForAgent(agentName)
+    .filter(i => i.status === 'running');
+  
+  // Mark queue items as completed/failed
+  for (const item of runningItems) {
+    if (isSuccess) {
+      commandQueueManager.markCompleted(item.id, summary || 'Completed');
+    } else {
+      commandQueueManager.markFailed(item.id, summary || 'Failed');
+    }
+  }
+
+  // Update agent status to idle
+  eventBus.emit('agent-status', { agentName, status: 'idle' });
+
+  // Log the completion
+  logStore.addEntry({
+    agentName,
+    level: isSuccess ? 'info' : 'error',
+    message: summary || (isSuccess ? 'Task completed' : 'Task failed'),
+    timestamp: Date.now(),
+  });
+
+  const icon = isSuccess ? '$(check)' : '$(error)';
+  stream.markdown(`${icon} **${agentName}** task ${isSuccess ? 'completed' : 'failed'}`);
+  if (summary) {
+    stream.markdown(`\n\n> ${summary}`);
+  }
+  if (runningItems.length > 0) {
+    stream.markdown(`\n\nMarked ${runningItems.length} queue item(s) as ${isSuccess ? 'completed' : 'failed'}.`);
+  }
+
+  return {};
+}
+
+/**
+ * Handle /progress — Copilot reports progress during task execution
+ * Usage: @squad /progress @AgentName message
+ */
+function handleProgress(request: vscode.ChatRequest, stream: vscode.ChatResponseStream): vscode.ChatResult {
+  const ctx = squadRegistry.activeContext;
+  if (!ctx) {
+    stream.markdown('No active squad.');
+    return {};
+  }
+
+  const prompt = request.prompt.trim();
+  const match = prompt.match(/^@?(\S+)\s+(.+)$/s);
+  
+  if (!match) {
+    stream.markdown('Usage: `@squad /progress @AgentName <progress message>`\n\n');
+    stream.markdown('Example: `@squad /progress @Backend Setting up database connection...`');
+    return {};
+  }
+
+  const [, agentName, message] = match;
+  
+  // Verify agent exists
+  const agent = ctx.agents.get(agentName);
+  if (!agent) {
+    const agents = [...ctx.agents.keys()];
+    stream.markdown(`Agent **${agentName}** not found. Available: ${agents.join(', ')}`);
+    return {};
+  }
+
+  // Log the progress
+  logStore.addEntry({
+    agentName,
+    level: 'info',
+    message: message,
+    timestamp: Date.now(),
+  });
+
+  stream.markdown(`$(sync~spin) **${agentName}**: ${message}`);
+  return {};
+}
+
 function handleDefault(request: vscode.ChatRequest, stream: vscode.ChatResponseStream): vscode.ChatResult {
   const ctx = squadRegistry.activeContext;
   const squadInfo = ctx ? `Active squad: **${ctx.squadName}** (${[...ctx.agents.keys()].length} agents)` : 'No active squad';
@@ -284,6 +419,8 @@ function handleDefault(request: vscode.ChatRequest, stream: vscode.ChatResponseS
   stream.markdown('- `/assign @agent [task]` — Assign task to specific agent\n');
   stream.markdown('- `/roster` — Show detailed roster\n');
   stream.markdown('- `/agents [name]` — List agents or view a specific agent\n');
+  stream.markdown('- `/complete @agent success|failure [summary]` — Signal task done\n');
+  stream.markdown('- `/progress @agent [message]` — Report progress\n');
 
   if (!ctx) {
     stream.button({ command: 'squad.createSquad', title: 'Create Squad' });

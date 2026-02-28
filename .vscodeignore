@@ -1,0 +1,37 @@
+# Source files (compiled to out/)
+src/**
+**/*.ts
+tsconfig.json
+
+# Development
+.vscode/**
+.vscode-test/**
+node_modules/**
+
+# Build artifacts
+*.vsix
+
+# Repository/community files
+.git/**
+.gitignore
+.github/**
+.copilot/**
+docs/**
+
+# Squad protocol files (not needed in extension)
+.squad/**
+.squad-templates/**
+
+# Tests
+**/test/**
+**/*.test.js
+
+# Configs
+.eslintrc.json
+.prettierrc
+
+# Docs (README is kept)
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+SECURITY.md
+CHANGELOG.md
